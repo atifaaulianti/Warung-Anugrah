@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS Library for Excel Export (.xlsx) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -53,29 +55,31 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased h-screen flex flex-col overflow-hidden">
 
-    <!-- TOP NAVIGATION BAR -->
-    <header class="bg-amber-900 text-white shadow-md z-10 flex-shrink-0 no-print">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="bg-amber-500 text-amber-950 p-2 rounded-lg font-bold text-xl">
-                    <i class="fa-solid font-bold fa-utensils"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight">WARUNG ANUGRAH</h1>
-                    <p class="text-xs text-amber-200">Sop Konro & Palekko</p>
+    <!-- TOP NAVIGATION BAR (RESPONSIF TEMA KUNING-MERAH) -->
+    <header class="bg-red-700 text-white shadow-md z-10 flex-shrink-0 no-print">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-start">
+                <div class="flex items-center space-x-2.5">
+                    <div class="bg-yellow-400 text-red-950 p-1.5 sm:p-2 rounded-lg font-bold text-lg sm:text-xl">
+                        <i class="fa-solid font-bold fa-utensils"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-base sm:text-lg leading-tight">WARUNG ANUGRAH</h1>
+                        <p class="text-[10px] sm:text-xs text-yellow-200">Sop Konro & Palekko</p>
+                    </div>
                 </div>
             </div>
 
             <!-- Navigation Tabs -->
-            <nav class="flex space-x-1 sm:space-x-2 bg-amber-950/40 p-1 rounded-xl">
-                <button onclick="switchTab('pos')" id="tab-pos" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg bg-amber-500 text-amber-950 shadow transition-all">
-                    <i class="fa-solid font-bold fa-cash-register mr-1.5"></i> Kasir (POS)
+            <nav class="flex w-full sm:w-auto space-x-1 bg-red-900/50 p-1 rounded-xl overflow-x-auto justify-center">
+                <button onclick="switchTab('pos')" id="tab-pos" class="tab-btn px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg bg-yellow-400 text-red-950 shadow transition-all whitespace-nowrap">
+                    <i class="fa-solid font-bold fa-cash-register mr-1"></i> Kasir
                 </button>
-                <button onclick="switchTab('expenses')" id="tab-expenses" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg text-amber-100 hover:text-white hover:bg-amber-800/50 transition-all">
-                    <i class="fa-solid fa-receipt mr-1.5"></i> Pengeluaran
+                <button onclick="switchTab('expenses')" id="tab-expenses" class="tab-btn px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg text-yellow-100 hover:text-white hover:bg-red-800/50 transition-all whitespace-nowrap">
+                    <i class="fa-solid fa-receipt mr-1"></i> Pengeluaran
                 </button>
-                <button onclick="switchTab('reports')" id="tab-reports" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg text-amber-100 hover:text-white hover:bg-amber-800/50 transition-all">
-                    <i class="fa-solid fa-chart-line mr-1.5"></i> Laporan Laba/Rugi
+                <button onclick="switchTab('reports')" id="tab-reports" class="tab-btn px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg text-yellow-100 hover:text-white hover:bg-red-800/50 transition-all whitespace-nowrap">
+                    <i class="fa-solid fa-chart-line mr-1"></i> Laporan
                 </button>
             </nav>
         </div>
@@ -85,61 +89,61 @@
     <main class="flex-1 overflow-hidden relative">
 
         <!-- ========================================== -->
-        <!-- 1. HALAMAN KASIR (POS) -->
+        <!-- 1. HALAMAN KASIR (POS - RESPONSIF HP) -->
         <!-- ========================================== -->
-        <section id="view-pos" class="h-full flex flex-col md:flex-row p-4 gap-4 overflow-hidden">
+        <section id="view-pos" class="h-full flex flex-col md:flex-row p-2.5 sm:p-4 gap-3 sm:gap-4 overflow-y-auto md:overflow-hidden">
             
             <!-- Left Side: Menu Grid -->
-            <div class="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[350px] md:min-h-0">
                 <!-- Search & Category Filters -->
-                <div class="p-4 border-b border-slate-100 space-y-3">
+                <div class="p-3 sm:p-4 border-b border-slate-100 space-y-2.5">
                     <div class="flex gap-2">
                         <div class="relative flex-1">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="search-menu" onkeyup="filterMenu()" placeholder="Cari menu konro, palekko, minuman..." 
-                                class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs sm:text-sm"></i>
+                            <input type="text" id="search-menu" onkeyup="filterMenu()" placeholder="Cari menu konro, palekko..." 
+                                class="w-full pl-8 sm:pl-9 pr-3 py-1.5 sm:py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500">
                         </div>
                     </div>
                     <!-- Categories -->
-                    <div class="flex space-x-2 overflow-x-auto pb-1 text-xs sm:text-sm" id="category-bar">
-                        <button onclick="filterCategory('All')" class="cat-btn bg-amber-900 text-white px-3 py-1.5 rounded-lg font-medium whitespace-nowrap shadow-sm">Semua</button>
-                        <button onclick="filterCategory('Makanan')" class="cat-btn bg-slate-100 text-slate-600 hover:bg-slate-200 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">Makanan Utama</button>
-                        <button onclick="filterCategory('Pelengkap')" class="cat-btn bg-slate-100 text-slate-600 hover:bg-slate-200 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">Pelengkap & Nasi</button>
-                        <button onclick="filterCategory('Minuman')" class="cat-btn bg-slate-100 text-slate-600 hover:bg-slate-200 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">Minuman</button>
+                    <div class="flex space-x-1.5 overflow-x-auto pb-1 text-xs" id="category-bar">
+                        <button onclick="filterCategory('All')" class="cat-btn bg-red-700 text-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium whitespace-nowrap shadow-sm">Semua</button>
+                        <button onclick="filterCategory('Makanan')" class="cat-btn bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium whitespace-nowrap">Makanan Utama</button>
+                        <button onclick="filterCategory('Pelengkap')" class="cat-btn bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium whitespace-nowrap">Pelengkap</button>
+                        <button onclick="filterCategory('Minuman')" class="cat-btn bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium whitespace-nowrap">Minuman</button>
                     </div>
                 </div>
 
                 <!-- Product Grid (Scrollable) -->
-                <div class="flex-1 overflow-y-auto p-4">
-                    <div id="menu-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                <div class="flex-1 overflow-y-auto p-2.5 sm:p-4">
+                    <div id="menu-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                         <!-- Menu Cards will be injected by JavaScript -->
                     </div>
                 </div>
             </div>
 
             <!-- Right Side: Cart / Order Summary -->
-            <div class="w-full md:w-96 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="w-full md:w-80 lg:w-96 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0 min-h-[300px] md:min-h-0">
                 <!-- Cart Header -->
-                <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div class="p-3 sm:p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <div>
-                        <h2 class="font-bold text-slate-800">Pesanan Aktif</h2>
-                        <p class="text-xs text-slate-500" id="current-time-display">--</p>
+                        <h2 class="font-bold text-sm sm:text-base text-slate-800">Pesanan Aktif</h2>
+                        <p class="text-[10px] sm:text-xs text-slate-500" id="current-time-display">--</p>
                     </div>
-                    <button onclick="clearCart()" class="text-xs text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded border border-red-200 bg-red-50">
+                    <button onclick="clearCart()" class="text-[10px] sm:text-xs text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded border border-red-200 bg-red-50">
                         <i class="fa-solid fa-trash-can mr-1"></i>Reset
                     </button>
                 </div>
 
                 <!-- Customer info & Table -->
-                <div class="p-3 border-b border-slate-100 grid grid-cols-2 gap-2 bg-slate-50/50">
+                <div class="p-2.5 sm:p-3 border-b border-slate-100 grid grid-cols-2 gap-2 bg-slate-50/50">
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Pelanggan / Meja</label>
+                        <label class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">Pelanggan / Meja</label>
                         <input type="text" id="customer-name" placeholder="Contoh: Meja 04" 
-                            class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500">
+                            class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500">
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Tipe</label>
-                        <select id="order-type" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500">
+                        <label class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">Tipe</label>
+                        <select id="order-type" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500">
                             <option value="Dine-in">Makan di Tempat</option>
                             <option value="Takeaway">Bawa Pulang</option>
                         </select>
@@ -147,30 +151,30 @@
                 </div>
 
                 <!-- Cart Items List (Scrollable) -->
-                <div class="flex-1 overflow-y-auto p-3 divide-y divide-slate-100" id="cart-items-container">
+                <div class="flex-1 overflow-y-auto p-2.5 sm:p-3 divide-y divide-slate-100 max-h-[220px] md:max-h-none" id="cart-items-container">
                     <!-- Cart items will be rendered here -->
-                    <div class="h-full flex flex-col items-center justify-center text-slate-400 text-center p-6">
-                        <i class="fa-solid fa-basket-shopping text-4xl mb-2 opacity-30"></i>
-                        <p class="text-xs">Keranjang masih kosong.<br>Klik menu di sebelah kiri untuk memasukkan pesanan.</p>
+                    <div class="h-full flex flex-col items-center justify-center text-slate-400 text-center p-4">
+                        <i class="fa-solid fa-basket-shopping text-3xl mb-1 opacity-30"></i>
+                        <p class="text-xs">Keranjang masih kosong.<br>Klik menu di atas untuk memasukkan pesanan.</p>
                     </div>
                 </div>
 
                 <!-- Cart Summary & Checkout -->
-                <div class="p-4 border-t border-slate-100 bg-slate-50 space-y-3">
-                    <div class="space-y-1.5 text-xs">
+                <div class="p-3 sm:p-4 border-t border-slate-100 bg-slate-50 space-y-2.5">
+                    <div class="space-y-1 text-xs">
                         <div class="flex justify-between text-slate-500">
                             <span>Subtotal</span>
                             <span class="font-mono font-medium" id="cart-subtotal">Rp 0</span>
                         </div>
-                        <div class="flex justify-between text-slate-800 text-base font-bold pt-1 border-t border-slate-200">
+                        <div class="flex justify-between text-slate-800 text-sm sm:text-base font-bold pt-1 border-t border-slate-200">
                             <span>TOTAL</span>
-                            <span class="text-amber-900 font-mono" id="cart-total">Rp 0</span>
+                            <span class="text-red-700 font-mono" id="cart-total">Rp 0</span>
                         </div>
                     </div>
 
                     <!-- Payment Button -->
                     <button onclick="openPaymentModal()" id="btn-checkout" disabled
-                        class="w-full py-3 bg-slate-300 text-slate-500 font-bold rounded-xl shadow-sm text-sm transition-all flex items-center justify-center space-x-2 disabled:cursor-not-allowed">
+                        class="w-full py-2.5 sm:py-3 bg-slate-300 text-slate-500 font-bold rounded-xl shadow-sm text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 disabled:cursor-not-allowed">
                         <span>Bayar Sekarang</span>
                         <i class="fa-solid fa-arrow-right"></i>
                     </button>
@@ -181,57 +185,57 @@
         <!-- ========================================== -->
         <!-- 2. HALAMAN PENGELUARAN (EXPENSES) -->
         <!-- ========================================== -->
-        <section id="view-expenses" class="h-full p-4 md:p-6 overflow-y-auto hidden">
-            <div class="max-w-5xl mx-auto space-y-6">
+        <section id="view-expenses" class="h-full p-3 sm:p-6 overflow-y-auto hidden">
+            <div class="max-w-5xl mx-auto space-y-4 sm:space-y-6">
                 <!-- Header -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800">Pencatatan Pengeluaran Warung</h2>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-800">Pencatatan Pengeluaran Warung</h2>
                         <p class="text-xs text-slate-500">Catat pembelian bahan baku, biaya operasional, dan lainnya.</p>
                     </div>
-                    <div class="bg-red-50 text-red-700 px-4 py-2 rounded-xl border border-red-100 flex items-center space-x-2">
-                        <i class="fa-solid fa-wallet text-lg"></i>
+                    <div class="bg-red-50 text-red-700 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl border border-red-100 flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-start">
+                        <i class="fa-solid fa-wallet text-base sm:text-lg"></i>
                         <div>
-                            <span class="text-[10px] uppercase font-bold text-red-400 block">Total Pengeluaran</span>
-                            <span class="font-mono font-bold text-base" id="total-expense-badge">Rp 0</span>
+                            <span class="text-[9px] sm:text-[10px] uppercase font-bold text-red-400 block">Total Pengeluaran</span>
+                            <span class="font-mono font-bold text-sm sm:text-base" id="total-expense-badge">Rp 0</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Filter Tanggal Pengeluaran -->
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                     <div class="flex items-center space-x-2">
                         <i class="fa-solid fa-calendar-days text-slate-400"></i>
                         <span class="font-bold text-slate-700">Filter Rentang Waktu:</span>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <div>
-                            <label class="text-[10px] text-slate-400 font-bold block">Dari Tanggal</label>
-                            <input type="date" id="exp-start-date" onchange="renderExpenses()" class="p-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-amber-500">
+                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <div class="flex-1 sm:flex-none">
+                            <label class="text-[9px] sm:text-[10px] text-slate-400 font-bold block">Dari Tanggal</label>
+                            <input type="date" id="exp-start-date" onchange="renderExpenses()" class="w-full sm:w-auto p-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-yellow-500">
                         </div>
-                        <div>
-                            <label class="text-[10px] text-slate-400 font-bold block">Sampai Tanggal</label>
-                            <input type="date" id="exp-end-date" onchange="renderExpenses()" class="p-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-amber-500">
+                        <div class="flex-1 sm:flex-none">
+                            <label class="text-[9px] sm:text-[10px] text-slate-400 font-bold block">Sampai Tanggal</label>
+                            <input type="date" id="exp-end-date" onchange="renderExpenses()" class="w-full sm:w-auto p-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-yellow-500">
                         </div>
-                        <button onclick="resetExpDateFilter()" class="mt-4 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-semibold">
+                        <button onclick="resetExpDateFilter()" class="mt-3 sm:mt-4 w-full sm:w-auto px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-semibold text-xs">
                             Reset Filter
                         </button>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                     <!-- Form Input Pengeluaran -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 sm:space-y-4">
                         <h3 class="font-bold text-slate-800 border-b pb-2 text-sm">Tambah Pengeluaran Baru</h3>
                         
                         <form id="expense-form" onsubmit="addExpense(event)" class="space-y-3 text-xs">
                             <div>
                                 <label class="block text-slate-600 font-medium mb-1">Tanggal</label>
-                                <input type="date" id="exp-date" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+                                <input type="date" id="exp-date" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
                             </div>
                             <div>
                                 <label class="block text-slate-600 font-medium mb-1">Kategori</label>
-                                <select id="exp-category" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+                                <select id="exp-category" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
                                     <option value="Bahan Baku Pasar">Bahan Baku</option>
                                     <option value="Operasional">Operasional</option>
                                     <option value="Gaji Karyawan">Gaji</option>
@@ -240,15 +244,15 @@
                             </div>
                             <div>
                                 <label class="block text-slate-600 font-medium mb-1">Deskripsi / Keterangan</label>
-                                <input type="text" id="exp-desc" placeholder="Contoh: Iga sapi 10kg & Bebek 5 ekor" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+                                <input type="text" id="exp-desc" placeholder="Contoh: Iga sapi 10kg & Bebek 5 ekor" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
                             </div>
                             <div>
                                 <label class="block text-slate-600 font-medium mb-1">Jumlah Biaya (Rp)</label>
-                                <input type="number" id="exp-amount" min="1" placeholder="0" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none font-mono">
+                                <input type="number" id="exp-amount" min="1" placeholder="0" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none font-mono">
                             </div>
 
-                            <button type="submit" class="w-full py-2.5 bg-amber-900 hover:bg-amber-950 text-white font-bold rounded-xl transition-all shadow-sm flex items-center justify-center space-x-2">
-                                <i class="fa-solid fa-plus"></i>
+                            <button type="submit" class="w-full py-2.5 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl transition-all shadow-sm flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-plus text-yellow-400"></i>
                                 <span>Simpan Pengeluaran</span>
                             </button>
                         </form>
@@ -256,12 +260,12 @@
 
                     <!-- Tabel List Pengeluaran -->
                     <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                        <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                        <div class="p-3 sm:p-4 border-b border-slate-100 flex justify-between items-center">
                             <h3 class="font-bold text-slate-800 text-sm">Riwayat Pengeluaran</h3>
                             <button onclick="clearExpenses()" class="text-xs text-red-500 hover:underline">Hapus Semua</button>
                         </div>
                         <div class="overflow-x-auto flex-1">
-                            <table class="w-full text-left text-xs text-slate-600">
+                            <table class="w-full text-left text-xs text-slate-600 min-w-[500px]">
                                 <thead class="bg-slate-50 uppercase text-[10px] text-slate-400 font-bold border-b border-slate-100">
                                     <tr>
                                         <th class="p-3">Tanggal</th>
@@ -284,88 +288,88 @@
         <!-- ========================================== -->
         <!-- 3. HALAMAN LAPORAN & REKAP (REPORTS) -->
         <!-- ========================================== -->
-        <section id="view-reports" class="h-full p-4 md:p-6 overflow-y-auto hidden">
-            <div class="max-w-6xl mx-auto space-y-6">
+        <section id="view-reports" class="h-full p-3 sm:p-6 overflow-y-auto hidden">
+            <div class="max-w-6xl mx-auto space-y-4 sm:space-y-6">
                 <!-- Header -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800">Laporan Keuangan & Penjualan</h2>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-800">Laporan Keuangan & Penjualan</h2>
                         <p class="text-xs text-slate-500">Ringkasan transaksi kasir, pengeluaran, dan estimasi laba bersih.</p>
                     </div>
-                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2.5 rounded-xl font-bold flex items-center space-x-2 shadow-sm">
+                    <button onclick="exportToExcelFormatted()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2.5 rounded-xl font-bold flex items-center justify-center space-x-2 shadow-sm">
                         <i class="fa-solid fa-file-excel text-base"></i>
-                        <span>Export ke Excel (.csv)</span>
+                        <span>Export ke Excel (.xlsx)</span>
                     </button>
                 </div>
 
                 <!-- Filter Rentang Waktu Laporan -->
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                     <div class="flex items-center space-x-2">
-                        <i class="fa-solid fa-filter text-amber-900"></i>
+                        <i class="fa-solid fa-filter text-red-700"></i>
                         <span class="font-bold text-slate-700">Filter Periode Laporan:</span>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <div>
-                            <label class="text-[10px] text-slate-400 font-bold block">Tanggal Mulai</label>
-                            <input type="date" id="rep-start-date" onchange="renderReports()" class="p-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-amber-500">
+                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <div class="flex-1 sm:flex-none">
+                            <label class="text-[9px] sm:text-[10px] text-slate-400 font-bold block">Tanggal Mulai</label>
+                            <input type="date" id="rep-start-date" onchange="renderReports()" class="w-full sm:w-auto p-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-yellow-500">
                         </div>
-                        <div>
-                            <label class="text-[10px] text-slate-400 font-bold block">Tanggal Sampai</label>
-                            <input type="date" id="rep-end-date" onchange="renderReports()" class="p-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-amber-500">
+                        <div class="flex-1 sm:flex-none">
+                            <label class="text-[9px] sm:text-[10px] text-slate-400 font-bold block">Tanggal Sampai</label>
+                            <input type="date" id="rep-end-date" onchange="renderReports()" class="w-full sm:w-auto p-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-yellow-500">
                         </div>
-                        <button onclick="resetReportDateFilter()" class="mt-4 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-semibold">
+                        <button onclick="resetReportDateFilter()" class="mt-3 sm:mt-4 w-full sm:w-auto px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-semibold text-xs">
                             Reset Periode
                         </button>
                     </div>
                 </div>
 
                 <!-- Financial Cards Summary -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     <!-- Total Penjualan -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-xs font-bold uppercase text-slate-400">Total Penjualan (Omzet)</p>
-                            <h3 class="text-2xl font-black text-emerald-600 font-mono mt-1" id="report-total-sales">Rp 0</h3>
-                            <p class="text-[11px] text-slate-400 mt-1" id="report-sales-count">0 Transaksi</p>
+                            <h3 class="text-xl sm:text-2xl font-black text-emerald-600 font-mono mt-1" id="report-total-sales">Rp 0</h3>
+                            <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1" id="report-sales-count">0 Transaksi</p>
                         </div>
-                        <div class="bg-emerald-50 text-emerald-600 p-3.5 rounded-2xl">
-                            <i class="fa-solid fa-chart-line text-2xl"></i>
+                        <div class="bg-emerald-50 text-emerald-600 p-3 sm:p-3.5 rounded-2xl">
+                            <i class="fa-solid fa-chart-line text-xl sm:text-2xl"></i>
                         </div>
                     </div>
 
                     <!-- Total Pengeluaran -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-xs font-bold uppercase text-slate-400">Total Pengeluaran</p>
-                            <h3 class="text-2xl font-black text-red-500 font-mono mt-1" id="report-total-expenses">Rp 0</h3>
-                            <p class="text-[11px] text-slate-400 mt-1" id="report-expenses-count">0 Catatan</p>
+                            <h3 class="text-xl sm:text-2xl font-black text-red-500 font-mono mt-1" id="report-total-expenses">Rp 0</h3>
+                            <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1" id="report-expenses-count">0 Catatan</p>
                         </div>
-                        <div class="bg-red-50 text-red-500 p-3.5 rounded-2xl">
-                            <i class="fa-solid fa-arrow-trend-down text-2xl"></i>
+                        <div class="bg-red-50 text-red-500 p-3 sm:p-3.5 rounded-2xl">
+                            <i class="fa-solid fa-arrow-trend-down text-xl sm:text-2xl"></i>
                         </div>
                     </div>
 
                     <!-- Laba Bersih -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-xs font-bold uppercase text-slate-400">Estimasi Laba Bersih</p>
-                            <h3 class="text-2xl font-black text-amber-900 font-mono mt-1" id="report-net-profit">Rp 0</h3>
-                            <p class="text-[11px] text-slate-400 mt-1">Omzet − Pengeluaran</p>
+                            <h3 class="text-xl sm:text-2xl font-black text-red-700 font-mono mt-1" id="report-net-profit">Rp 0</h3>
+                            <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1">Omzet − Pengeluaran</p>
                         </div>
-                        <div class="bg-amber-50 text-amber-900 p-3.5 rounded-2xl">
-                            <i class="fa-solid fa-sack-dollar text-2xl"></i>
+                        <div class="bg-yellow-100 text-red-700 p-3 sm:p-3.5 rounded-2xl">
+                            <i class="fa-solid fa-sack-dollar text-xl sm:text-2xl"></i>
                         </div>
                     </div>
                 </div>
 
                 <!-- History Sales Table -->
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                    <div class="p-3 sm:p-4 border-b border-slate-100 flex justify-between items-center">
                         <h3 class="font-bold text-slate-800 text-sm">Riwayat Transaksi Penjualan</h3>
                         <button onclick="clearSalesHistory()" class="text-xs text-red-500 hover:underline">Reset Riwayat</button>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs text-slate-600">
+                        <table class="w-full text-left text-xs text-slate-600 min-w-[650px]">
                             <thead class="bg-slate-50 uppercase text-[10px] text-slate-400 font-bold border-b border-slate-100">
                                 <tr>
                                     <th class="p-3">No. Nota</th>
@@ -391,32 +395,32 @@
     <!-- ========================================== -->
     <!-- MODAL: METODE PEMBAYARAN & CHECKOUT -->
     <!-- ========================================== -->
-    <div id="modal-payment" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div class="p-4 bg-amber-900 text-white flex justify-between items-center">
-                <h3 class="font-bold text-base">Pembayaran Transaksi</h3>
-                <button onclick="closePaymentModal()" class="text-amber-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <div id="modal-payment" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[95vh] flex flex-col">
+            <div class="p-3.5 sm:p-4 bg-red-700 text-white flex justify-between items-center">
+                <h3 class="font-bold text-sm sm:text-base">Pembayaran Transaksi</h3>
+                <button onclick="closePaymentModal()" class="text-yellow-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <div class="p-5 space-y-4">
+            <div class="p-4 sm:p-5 space-y-3.5 sm:space-y-4 overflow-y-auto">
                 <!-- Total Amount Display -->
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
-                    <span class="text-xs font-bold text-slate-400 uppercase">Total Tagihan</span>
-                    <div class="text-3xl font-black text-amber-900 font-mono" id="modal-total-pay">Rp 0</div>
+                <div class="bg-slate-50 p-2.5 sm:p-3 rounded-xl border border-slate-200 text-center">
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase">Total Tagihan</span>
+                    <div class="text-2xl sm:text-3xl font-black text-red-700 font-mono" id="modal-total-pay">Rp 0</div>
                 </div>
 
                 <!-- Payment Method Selection -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Metode Pembayaran</label>
+                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Metode Pembayaran</label>
                     <div class="grid grid-cols-3 gap-2">
-                        <button type="button" onclick="selectPaymentMethod('Tunai')" id="pay-btn-tunai" class="pay-method-btn p-3 border rounded-xl text-center font-semibold text-xs border-amber-900 bg-amber-50 text-amber-900">
-                            <i class="fa-solid fa-money-bill-wave text-base block mb-1"></i> Tunai
+                        <button type="button" onclick="selectPaymentMethod('Tunai')" id="pay-btn-tunai" class="pay-method-btn p-2.5 sm:p-3 border rounded-xl text-center font-semibold text-xs border-red-700 bg-red-50 text-red-700">
+                            <i class="fa-solid fa-money-bill-wave text-sm sm:text-base block mb-1"></i> Tunai
                         </button>
-                        <button type="button" onclick="selectPaymentMethod('QRIS')" id="pay-btn-qris" class="pay-method-btn p-3 border border-slate-200 rounded-xl text-center font-semibold text-xs text-slate-600 hover:bg-slate-50">
-                            <i class="fa-solid fa-qrcode text-base block mb-1"></i> QRIS
+                        <button type="button" onclick="selectPaymentMethod('QRIS')" id="pay-btn-qris" class="pay-method-btn p-2.5 sm:p-3 border border-slate-200 rounded-xl text-center font-semibold text-xs text-slate-600 hover:bg-slate-50">
+                            <i class="fa-solid fa-qrcode text-sm sm:text-base block mb-1"></i> QRIS
                         </button>
-                        <button type="button" onclick="selectPaymentMethod('Transfer')" id="pay-btn-transfer" class="pay-method-btn p-3 border border-slate-200 rounded-xl text-center font-semibold text-xs text-slate-600 hover:bg-slate-50">
-                            <i class="fa-solid fa-building-columns text-base block mb-1"></i> Transfer
+                        <button type="button" onclick="selectPaymentMethod('Transfer')" id="pay-btn-transfer" class="pay-method-btn p-2.5 sm:p-3 border border-slate-200 rounded-xl text-center font-semibold text-xs text-slate-600 hover:bg-slate-50">
+                            <i class="fa-solid fa-building-columns text-sm sm:text-base block mb-1"></i> Transfer
                         </button>
                     </div>
                 </div>
@@ -426,7 +430,7 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Uang Diterima (Rp)</label>
                         <input type="number" id="cash-given" oninput="calculateChange()" placeholder="0" 
-                            class="w-full p-2.5 border border-slate-200 rounded-xl text-lg font-bold font-mono focus:ring-2 focus:ring-amber-500 outline-none">
+                            class="w-full p-2.5 border border-slate-200 rounded-xl text-base sm:text-lg font-bold font-mono focus:ring-2 focus:ring-yellow-500 outline-none">
                     </div>
 
                     <!-- Quick Cash Buttons -->
@@ -435,16 +439,16 @@
                     </div>
 
                     <!-- Change Display -->
-                    <div class="flex justify-between items-center p-3 bg-slate-100 rounded-xl">
+                    <div class="flex justify-between items-center p-2.5 sm:p-3 bg-slate-100 rounded-xl">
                         <span class="text-xs font-bold text-slate-600 uppercase">Kembalian</span>
-                        <span class="text-lg font-bold font-mono text-emerald-600" id="cash-change">Rp 0</span>
+                        <span class="text-base sm:text-lg font-bold font-mono text-emerald-600" id="cash-change">Rp 0</span>
                     </div>
                 </div>
 
                 <!-- Confirm Action -->
                 <button onclick="processTransaction()" id="btn-submit-order"
-                    class="w-full py-3 bg-amber-900 hover:bg-amber-950 text-white font-bold rounded-xl shadow transition-all text-sm flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-print"></i>
+                    class="w-full py-3 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl shadow transition-all text-xs sm:text-sm flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-print text-yellow-400"></i>
                     <span>Selesaikan & Cetak Struk</span>
                 </button>
             </div>
@@ -454,7 +458,7 @@
     <!-- ========================================== -->
     <!-- MODAL: NOTA / STRUK BELANJA (PRINTABLE) -->
     <!-- ========================================== -->
-    <div id="modal-receipt" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div id="modal-receipt" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
             <!-- Header Modal -->
             <div class="p-3 bg-slate-100 border-b flex justify-between items-center no-print">
@@ -463,12 +467,12 @@
             </div>
 
             <!-- Receipt Content (Thermal 58mm style) -->
-            <div class="p-6 overflow-y-auto font-mono text-xs text-slate-800 space-y-3 bg-white" id="printable-receipt">
+            <div class="p-5 sm:p-6 overflow-y-auto font-mono text-xs text-slate-800 space-y-3 bg-white" id="printable-receipt">
                 <div class="text-center space-y-1">
                     <h2 class="font-bold text-base uppercase">WARUNG ANUGRAH</h2>
-                    <p class="text-[10px] text-slate-500">Sop Konro & Palekko</p>
-                    <p class="text-[10px] text-slate-500">Jl. Sultan Hasanuddin, Takalar</p>
-                    <p class="text-[10px] text-slate-500">Telp/WA: 0852-3068-6891</p>
+                    <p class="text-[10px] text-slate-500">Sop Konro & Nasu Palekko Makassar</p>
+                    <p class="text-[10px] text-slate-500">Jl. Bawakaraeng No. 45, Makassar</p>
+                    <p class="text-[10px] text-slate-500">Telp/WA: 0812-3456-7890</p>
                 </div>
 
                 <div class="border-b border-dashed border-slate-300 my-2"></div>
@@ -506,8 +510,8 @@
 
             <!-- Action Buttons -->
             <div class="p-3 bg-slate-50 border-t flex gap-2 no-print">
-                <button onclick="window.print()" class="flex-1 py-2 bg-amber-900 hover:bg-amber-950 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1">
-                    <i class="fa-solid fa-print"></i>
+                <button onclick="window.print()" class="flex-1 py-2 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-print text-yellow-400"></i>
                     <span>Cetak Struk</span>
                 </button>
                 <button onclick="closeReceiptModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs">
@@ -526,9 +530,10 @@
         const MENU_DATA = [
             { id: 1, name: "Sop Konro Kuah", category: "Makanan", price: 30000, icon: "fa-bowl-food", options: ["Biasa", "Bawang Goreng Extra"] },
             { id: 3, name: "Palekko", category: "Makanan", price: 25000, icon: "fa-drumstick-bite", options: ["Sedang", "Pedas", "Sangat Pedas"] },
-            { id: 6, name: "Nasi Putih", category: "Pelengkap", price: 6000, icon: "fa-bowl-rice", options: [] },
-            { id: 10, name: "Es Jeruk Peras", category: "Minuman", price: 10000, icon: "fa-glass-water-droplet", options: ["Dingin", "Hangat"] },
-            { id: 11, name: "Es Teh Manis", category: "Minuman", price: 5000, icon: "fa-wine-glass", options: ["Dingin", "Hangat"] },
+            { id: 7, name: "Bawang Goreng Extra", category: "Pelengkap", price: 3000, icon: "fa-seedling", options: [] },
+            { id: 8, name: "Daun Bawang Extra", category: "Pelengkap", price: 2000, icon: "fa-leaf", options: [] },
+            { id: 10, name: "Es Jeruk Peras", category: "Minuman", price: 10000, icon: "fa-glass-water-droplet", options: [] },
+            { id: 11, name: "Es Teh Manis", category: "Minuman", price: 5000, icon: "fa-wine-glass", options: [] },
             { id: 12, name: "Air Mineral Botol", category: "Minuman", price: 4000, icon: "fa-bottle-water", options: [] }
         ];
 
@@ -538,6 +543,26 @@
         let expensesList = JSON.parse(localStorage.getItem('pos_expenses') || '[]');
         let selectedCategory = 'All';
         let currentPaymentMethod = 'Tunai';
+
+        // --- HELPER UNTUK SERAGAMKAN FORMAT TANGGAL (DD/MM/YYYY, HH.mm) ---
+        function formatDateStandard(dateObj) {
+            if (!(dateObj instanceof Date) || isNaN(dateObj)) return "--";
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const year = dateObj.getFullYear();
+            const hours = String(dateObj.getHours()).padStart(2, '0');
+            const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year}, ${hours}.${minutes}`;
+        }
+
+        function formatDateOnlyStandard(dateStr) {
+            if (!dateStr) return "--";
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateStr;
+        }
 
         // --- INITIALIZATION ---
         window.onload = function() {
@@ -552,24 +577,21 @@
         };
 
         function updateTime() {
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('current-time-display').innerText = `${dateStr} | ${timeStr}`;
+            document.getElementById('current-time-display').innerText = formatDateStandard(new Date());
         }
 
         // --- NAVIGATION LOGIC ---
         function switchTab(tabName) {
             document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-amber-500', 'text-amber-950', 'shadow');
-                btn.classList.add('text-amber-100');
+                btn.classList.remove('bg-yellow-400', 'text-red-950', 'shadow');
+                btn.classList.add('text-yellow-100');
             });
 
             document.getElementById(`view-${tabName}`).classList.remove('hidden');
             const activeBtn = document.getElementById(`tab-${tabName}`);
-            activeBtn.classList.add('bg-amber-500', 'text-amber-950', 'shadow');
-            activeBtn.classList.remove('text-amber-100');
+            activeBtn.classList.add('bg-yellow-400', 'text-red-950', 'shadow');
+            activeBtn.classList.remove('text-yellow-100');
 
             if(tabName === 'reports') renderReports();
             if(tabName === 'expenses') renderExpenses();
@@ -595,28 +617,28 @@
 
             filtered.forEach(item => {
                 const card = document.createElement('div');
-                card.className = "bg-slate-50 hover:bg-amber-50/50 border border-slate-200 hover:border-amber-400 rounded-xl p-3 flex flex-col justify-between transition-all cursor-pointer group shadow-sm";
+                card.className = "bg-slate-50 hover:bg-yellow-50/60 border border-slate-200 hover:border-yellow-400 rounded-xl p-2.5 sm:p-3 flex flex-col justify-between transition-all cursor-pointer group shadow-sm";
                 card.onclick = () => addToCart(item.id);
 
                 let optionsHtml = '';
                 if(item.options.length > 0) {
-                    optionsHtml = `<span class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-medium mt-1 inline-block">${item.options.join(', ')}</span>`;
+                    optionsHtml = `<span class="text-[9px] bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-medium mt-1 inline-block">${item.options.join(', ')}</span>`;
                 }
 
                 card.innerHTML = `
                     <div>
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="p-2 bg-white rounded-lg text-amber-900 border border-slate-100 shadow-xs group-hover:bg-amber-900 group-hover:text-white transition-colors">
-                                <i class="fa-solid ${item.icon} text-sm"></i>
+                        <div class="flex justify-between items-start mb-1.5 sm:mb-2">
+                            <span class="p-1.5 sm:p-2 bg-white rounded-lg text-red-700 border border-slate-100 shadow-xs group-hover:bg-red-700 group-hover:text-white transition-colors">
+                                <i class="fa-solid ${item.icon} text-xs sm:text-sm"></i>
                             </span>
-                            <span class="text-[10px] text-slate-400 font-medium">${item.category}</span>
+                            <span class="text-[9px] sm:text-[10px] text-slate-400 font-medium">${item.category}</span>
                         </div>
-                        <h4 class="font-bold text-slate-800 text-xs leading-snug group-hover:text-amber-900">${item.name}</h4>
+                        <h4 class="font-bold text-slate-800 text-xs sm:text-xs leading-snug group-hover:text-red-700">${item.name}</h4>
                         ${optionsHtml}
                     </div>
-                    <div class="mt-3 flex items-center justify-between pt-2 border-t border-slate-200/60">
-                        <span class="font-mono font-bold text-xs text-slate-700">Rp ${item.price.toLocaleString()}</span>
-                        <span class="w-6 h-6 rounded-full bg-amber-900 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div class="mt-2.5 sm:mt-3 flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-200/60">
+                        <span class="font-mono font-bold text-[11px] sm:text-xs text-slate-700">Rp ${item.price.toLocaleString()}</span>
+                        <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-red-700 text-yellow-300 flex items-center justify-center text-[10px] sm:text-xs opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                             <i class="fa-solid fa-plus"></i>
                         </span>
                     </div>
@@ -628,11 +650,11 @@
         function filterCategory(cat) {
             selectedCategory = cat;
             document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.classList.remove('bg-amber-900', 'text-white');
+                btn.classList.remove('bg-red-700', 'text-white');
                 btn.classList.add('bg-slate-100', 'text-slate-600');
             });
             event.target.classList.remove('bg-slate-100', 'text-slate-600');
-            event.target.classList.add('bg-amber-900', 'text-white');
+            event.target.classList.add('bg-red-700', 'text-white');
             renderMenu();
         }
 
@@ -687,14 +709,14 @@
 
             if (cart.length === 0) {
                 container.innerHTML = `
-                    <div class="h-full flex flex-col items-center justify-center text-slate-400 text-center p-6">
-                        <i class="fa-solid fa-basket-shopping text-4xl mb-2 opacity-30"></i>
-                        <p class="text-xs">Keranjang masih kosong.<br>Klik menu di sebelah kiri untuk memasukkan pesanan.</p>
+                    <div class="h-full flex flex-col items-center justify-center text-slate-400 text-center p-4">
+                        <i class="fa-solid fa-basket-shopping text-3xl mb-1 opacity-30"></i>
+                        <p class="text-xs">Keranjang masih kosong.<br>Klik menu di atas untuk memasukkan pesanan.</p>
                     </div>`;
                 subtotalEl.innerText = 'Rp 0';
                 totalEl.innerText = 'Rp 0';
                 btnCheckout.disabled = true;
-                btnCheckout.classList.remove('bg-amber-900', 'hover:bg-amber-950', 'text-white');
+                btnCheckout.classList.remove('bg-red-700', 'hover:bg-red-800', 'text-white');
                 btnCheckout.classList.add('bg-slate-300', 'text-slate-500');
                 return;
             }
@@ -747,7 +769,7 @@
 
             btnCheckout.disabled = false;
             btnCheckout.classList.remove('bg-slate-300', 'text-slate-500');
-            btnCheckout.classList.add('bg-amber-900', 'hover:bg-amber-950', 'text-white');
+            btnCheckout.classList.add('bg-red-700', 'hover:bg-red-800', 'text-white');
         }
 
         // --- CHECKOUT & PAYMENT MODAL ---
@@ -770,7 +792,7 @@
             uniqueCash.forEach(amt => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = "px-2 py-1.5 bg-slate-100 hover:bg-amber-100 border border-slate-200 rounded text-[11px] font-mono font-bold text-slate-700";
+                btn.className = "px-2 py-1.5 bg-slate-100 hover:bg-yellow-100 border border-slate-200 rounded text-[11px] font-mono font-bold text-slate-700";
                 btn.innerText = `Rp ${(amt/1000).toFixed(0)}k`;
                 btn.onclick = () => {
                     document.getElementById('cash-given').value = amt;
@@ -793,12 +815,12 @@
         function selectPaymentMethod(method) {
             currentPaymentMethod = method;
             document.querySelectorAll('.pay-method-btn').forEach(b => {
-                b.classList.remove('border-amber-900', 'bg-amber-50', 'text-amber-900');
+                b.classList.remove('border-red-700', 'bg-red-50', 'text-red-700');
                 b.classList.add('border-slate-200', 'text-slate-600');
             });
             const activeBtn = document.getElementById(`pay-btn-${method.toLowerCase()}`);
             activeBtn.classList.remove('border-slate-200', 'text-slate-600');
-            activeBtn.classList.add('border-amber-900', 'bg-amber-50', 'text-amber-900');
+            activeBtn.classList.add('border-red-700', 'bg-red-50', 'text-red-700');
 
             const cashSection = document.getElementById('cash-calculator-section');
             if(method === 'Tunai') {
@@ -869,7 +891,7 @@
         // --- RECEIPT MODAL & PRINTING ---
         function showReceipt(sale) {
             document.getElementById('rec-id').innerText = sale.id;
-            document.getElementById('rec-date').innerText = new Date(sale.date).toLocaleString('id-ID');
+            document.getElementById('rec-date').innerText = formatDateStandard(new Date(sale.date));
             document.getElementById('rec-customer').innerText = sale.customer;
             document.getElementById('rec-type').innerText = sale.type;
 
@@ -952,7 +974,7 @@
             const endDate = document.getElementById('exp-end-date').value;
 
             return expensesList.filter(exp => {
-                const expDate = exp.date; // YYYY-MM-DD
+                const expDate = exp.date;
                 let matchStart = true;
                 let matchEnd = true;
 
@@ -988,8 +1010,8 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50";
                 tr.innerHTML = `
-                    <td class="p-3 font-mono">${exp.date}</td>
-                    <td class="p-3"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-semibold">${exp.category}</span></td>
+                    <td class="p-3 font-mono">${formatDateOnlyStandard(exp.date)}</td>
+                    <td class="p-3"><span class="bg-red-50 text-red-700 px-2 py-0.5 rounded text-[10px] font-semibold">${exp.category}</span></td>
                     <td class="p-3 font-medium text-slate-800">${exp.desc}</td>
                     <td class="p-3 text-right font-mono font-bold text-red-600">Rp ${exp.amount.toLocaleString()}</td>
                     <td class="p-3 text-center">
@@ -1008,7 +1030,7 @@
             const endDate = document.getElementById('rep-end-date').value;
 
             return salesHistory.filter(sale => {
-                const saleDateStr = sale.date.slice(0, 10); // YYYY-MM-DD
+                const saleDateStr = sale.date.slice(0, 10);
                 let matchStart = true;
                 let matchEnd = true;
 
@@ -1028,7 +1050,6 @@
         function renderReports() {
             const filteredSales = getFilteredSales();
             
-            // Filter expenses based on report date filter as well for accurate Net Profit calculation
             const startDate = document.getElementById('rep-start-date').value;
             const endDate = document.getElementById('rep-end-date').value;
             const filteredExpenses = expensesList.filter(exp => {
@@ -1053,11 +1074,11 @@
             const profitEl = document.getElementById('report-net-profit');
             profitEl.innerText = `Rp ${netProfit.toLocaleString()}`;
             if(netProfit < 0) {
-                profitEl.classList.remove('text-amber-900', 'text-emerald-600');
+                profitEl.classList.remove('text-red-700', 'text-emerald-600');
                 profitEl.classList.add('text-red-600');
             } else {
                 profitEl.classList.remove('text-red-600');
-                profitEl.classList.add('text-amber-900');
+                profitEl.classList.add('text-red-700');
             }
 
             // Render Sales History Table
@@ -1074,14 +1095,14 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50";
                 tr.innerHTML = `
-                    <td class="p-3 font-mono font-bold text-amber-900">${sale.id}</td>
-                    <td class="p-3 text-[11px] text-slate-500">${new Date(sale.date).toLocaleDateString('id-ID')} ${new Date(sale.date).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}</td>
+                    <td class="p-3 font-mono font-bold text-red-700">${sale.id}</td>
+                    <td class="p-3 text-[11px] text-slate-500 font-mono">${formatDateStandard(new Date(sale.date))}</td>
                     <td class="p-3 font-medium text-slate-800">${sale.customer} <span class="text-[10px] text-slate-400">(${sale.type})</span></td>
-                    <td class="p-3"><span class="bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded text-[10px] font-bold">${sale.method}</span></td>
+                    <td class="p-3"><span class="bg-yellow-100 text-red-800 border border-yellow-300 px-2 py-0.5 rounded text-[10px] font-bold">${sale.method}</span></td>
                     <td class="p-3 text-[11px] max-w-xs truncate" title="${itemsSummary}">${itemsSummary}</td>
                     <td class="p-3 text-right font-mono font-bold text-emerald-600">Rp ${sale.total.toLocaleString()}</td>
                     <td class="p-3 text-center">
-                        <button onclick='reprintReceipt("${sale.id}")' class="text-slate-500 hover:text-amber-900 text-xs px-2 py-1 bg-slate-100 rounded border border-slate-200">
+                        <button onclick='reprintReceipt("${sale.id}")' class="text-slate-500 hover:text-red-700 text-xs px-2 py-1 bg-slate-100 rounded border border-slate-200">
                             <i class="fa-solid fa-print mr-1"></i>Struk
                         </button>
                     </td>
@@ -1105,8 +1126,8 @@
             }
         }
 
-        // --- EXPORT KE EXCEL (CSV Format) ---
-        function exportToExcel() {
+        // --- EXPORT KE EXCEL RAPI (.XLSX DENGAN SHEETJS) ---
+        function exportToExcelFormatted() {
             const filteredSales = getFilteredSales();
             const startDate = document.getElementById('rep-start-date').value;
             const endDate = document.getElementById('rep-end-date').value;
@@ -1125,48 +1146,52 @@
                 return;
             }
 
-            let csvContent = "\uFEFF"; // Byte Order Mark (BOM) agar Microsoft Excel membaca format UTF-8 dengan benar
+            const wb = XLSX.utils.book_new();
 
-            // 1. SHEET PENJUALAN
-            csvContent += "--- LAPORAN PENJUALAN ---\n";
-            csvContent += "No. Nota,Waktu,Pelanggan,Tipe,Metode Pembayaran,Detail Pesanan,Total Tagihan\n";
-            filteredSales.forEach(s => {
-                const itemsStr = s.items.map(i => `${i.name} x${i.qty}`).join(' | ');
-                const formattedDate = new Date(s.date).toLocaleString('id-ID').replace(/,/g, '');
-                csvContent += `"${s.id}","${formattedDate}","${s.customer}","${s.type}","${s.method}","${itemsStr}",${s.total}\n`;
-            });
-
-            csvContent += "\n\n";
-
-            // 2. SHEET PENGELUARAN
-            csvContent += "--- LAPORAN PENGELUARAN ---\n";
-            csvContent += "ID Pengeluaran,Tanggal,Kategori,Keterangan,Jumlah Biaya\n";
-            filteredExpenses.forEach(e => {
-                csvContent += `"${e.id}","${e.date}","${e.category}","${e.desc}",${e.amount}\n`;
-            });
-
-            csvContent += "\n\n";
-
-            // 3. RINGKASAN KEUSANGAN
+            // 1. DATA SHEET RINGKASAN
             const totalOmzet = filteredSales.reduce((sum, s) => sum + s.total, 0);
             const totalBiaya = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
             const labaBersih = totalOmzet - totalBiaya;
 
-            csvContent += "--- RINGKASAN REKAPITULASI ---\n";
-            csvContent += `Total Penjualan (Omzet),${totalOmzet}\n`;
-            csvContent += `Total Pengeluaran,${totalBiaya}\n`;
-            csvContent += `Estimasi Laba Bersih,${labaBersih}\n`;
+            const summaryData = [
+                ["LAPORAN REKAPITULASI KEUANGAN WARUNG ANUGRAH"],
+                ["Periode:", (startDate ? formatDateOnlyStandard(startDate) : 'Awal') + " s/d " + (endDate ? formatDateOnlyStandard(endDate) : 'Hari Ini')],
+                [""],
+                ["Keterangan", "Nilai (Rp)"],
+                ["Total Penjualan (Omzet)", totalOmzet],
+                ["Total Pengeluaran", totalBiaya],
+                ["Estimasi Laba Bersih", labaBersih]
+            ];
+            const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+            wsSummary['!cols'] = [{ wch: 30 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, wsSummary, "Ringkasan Laba Rugi");
 
-            // Proses Download File CSV yang bisa langsung dibuka di Excel
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            const dateFileName = new Date().toISOString().slice(0, 10);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Laporan_Warung_Anugrah_${dateFileName}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // 2. DATA SHEET PENJUALAN
+            const salesData = [
+                ["No. Nota", "Waktu Transaksi", "Pelanggan / Meja", "Tipe Pesanan", "Metode Pembayaran", "Detail Menu Pesanan", "Total Tagihan (Rp)"]
+            ];
+            filteredSales.forEach(s => {
+                const itemsStr = s.items.map(i => `${i.name} (x${i.qty})`).join(', ');
+                salesData.push([s.id, formatDateStandard(new Date(s.date)), s.customer, s.type, s.method, itemsStr, s.total]);
+            });
+            const wsSales = XLSX.utils.aoa_to_sheet(salesData);
+            wsSales['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 20 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 18 }];
+            XLSX.utils.book_append_sheet(wb, wsSales, "Penjualan");
+
+            // 3. DATA SHEET PENGELUARAN
+            const expData = [
+                ["ID Pengeluaran", "Tanggal", "Kategori", "Keterangan", "Jumlah Biaya (Rp)"]
+            ];
+            filteredExpenses.forEach(e => {
+                expData.push([e.id, formatDateOnlyStandard(e.date), e.category, e.desc, e.amount]);
+            });
+            const wsExp = XLSX.utils.aoa_to_sheet(expData);
+            wsExp['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 35 }, { wch: 18 }];
+            XLSX.utils.book_append_sheet(wb, wsExp, "Pengeluaran");
+
+            // Generate & Download File .xlsx
+            const fileNameDate = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `Laporan_Warung_Anugrah_${fileNameDate}.xlsx`);
         }
     </script>
 </body>
