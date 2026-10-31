@@ -353,7 +353,7 @@
                     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-xs font-bold uppercase text-slate-400">Estimasi Laba Bersih</p>
-                            <h3 class="text-xl sm:text-2xl font-black text-red-700 font-mono mt-1" id="report-net-profit">Rp 0</h3>
+                            <h3 class="text-xl sm:text-2xl font-black text-emerald-600 font-mono mt-1" id="report-net-profit">Rp 0</h3>
                             <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1">Omzet − Pengeluaran</p>
                         </div>
                         <div class="bg-yellow-100 text-red-700 p-3 sm:p-3.5 rounded-2xl">
@@ -1073,11 +1073,11 @@
             const profitEl = document.getElementById('report-net-profit');
             profitEl.innerText = `Rp ${netProfit.toLocaleString()}`;
             if(netProfit < 0) {
-                profitEl.classList.remove('text-red-700', 'text-emerald-600');
+                profitEl.classList.remove('text-emerald-600', 'text-red-700');
                 profitEl.classList.add('text-red-600');
             } else {
-                profitEl.classList.remove('text-red-600');
-                profitEl.classList.add('text-red-700');
+                profitEl.classList.remove('text-red-600', 'text-red-700');
+                profitEl.classList.add('text-emerald-600');
             }
 
             // Render Sales History Table
