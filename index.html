@@ -272,7 +272,7 @@
                     <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                         <div class="p-3 sm:p-4 border-b border-slate-100 flex justify-between items-center">
                             <h3 class="font-bold text-slate-800 text-sm">Riwayat Pengeluaran</h3>
-                            <button onclick="clearExpenses()" class="text-xs text-red-500 hover:underline">Hapus Semua</button>
+                            <button onclick="clearExpenses()" class="text-xs text-red-500 hover:underline font-medium">Hapus Semua</button>
                         </div>
                         <div class="overflow-x-auto flex-1">
                             <table class="w-full text-left text-xs text-slate-600 min-w-[500px]">
@@ -376,7 +376,7 @@
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-3 sm:p-4 border-b border-slate-100 flex justify-between items-center">
                         <h3 class="font-bold text-slate-800 text-sm">Riwayat Transaksi Penjualan</h3>
-                        <button onclick="clearSalesHistory()" class="text-xs text-red-500 hover:underline">Reset Riwayat</button>
+                        <button onclick="clearSalesHistory()" class="text-xs text-red-500 hover:underline font-medium">Reset Riwayat</button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs text-slate-600 min-w-[650px]">
@@ -531,6 +531,31 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- MODAL: KONFIRMASI HAPUS (CUSTOM POP-UP MODAL) -->
+    <!-- ========================================== -->
+    <div id="modal-confirm-delete" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden p-5 space-y-4 text-center transform transition-all">
+            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            
+            <div class="space-y-1">
+                <h3 class="font-bold text-base text-slate-800" id="confirm-delete-title">Hapus Data</h3>
+                <p class="text-xs text-slate-500 leading-relaxed" id="confirm-delete-msg">Apakah Anda yakin ingin menghapus data ini?</p>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeConfirmDeleteModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition-colors">
+                    Batal
+                </button>
+                <button id="btn-confirm-delete-action" class="flex-1 py-2.5 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl text-xs shadow transition-colors flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-trash text-yellow-400"></i>
+                    <span>Ya, Hapus</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- ========================================== -->
     <!-- JAVASCRIPT LOGIC -->
@@ -934,6 +959,24 @@
             document.getElementById('modal-receipt').classList.add('hidden');
         }
 
+        // --- CUSTOM CONFIRM DELETE MODAL LOGIC ---
+        function openConfirmDeleteModal(title, message, onConfirmCallback) {
+            document.getElementById('confirm-delete-title').innerText = title;
+            document.getElementById('confirm-delete-msg').innerText = message;
+            
+            const btnConfirm = document.getElementById('btn-confirm-delete-action');
+            btnConfirm.onclick = function() {
+                onConfirmCallback();
+                closeConfirmDeleteModal();
+            };
+
+            document.getElementById('modal-confirm-delete').classList.remove('hidden');
+        }
+
+        function closeConfirmDeleteModal() {
+            document.getElementById('modal-confirm-delete').classList.add('hidden');
+        }
+
         // --- EXPENSES LOGIC ---
         function addExpense(e) {
             e.preventDefault();
@@ -963,19 +1006,27 @@
         }
 
         function deleteExpense(id) {
-            if(confirm('Hapus catatan pengeluaran ini?')) {
-                expensesList = expensesList.filter(e => e.id !== id);
-                localStorage.setItem('pos_expenses', JSON.stringify(expensesList));
-                renderExpenses();
-            }
+            openConfirmDeleteModal(
+                'Hapus Catatan Pengeluaran',
+                'Apakah Anda yakin ingin menghapus catatan pengeluaran ini?',
+                function() {
+                    expensesList = expensesList.filter(e => e.id !== id);
+                    localStorage.setItem('pos_expenses', JSON.stringify(expensesList));
+                    renderExpenses();
+                }
+            );
         }
 
         function clearExpenses() {
-            if(confirm('Hapus SEMUA catatan pengeluaran?')) {
-                expensesList = [];
-                localStorage.removeItem('pos_expenses');
-                renderExpenses();
-            }
+            openConfirmDeleteModal(
+                'Hapus Semua Pengeluaran',
+                'Apakah Anda yakin ingin menghapus SEMUA catatan pengeluaran? Tindakan ini tidak dapat dibatalkan.',
+                function() {
+                    expensesList = [];
+                    localStorage.removeItem('pos_expenses');
+                    renderExpenses();
+                }
+            );
         }
 
         function getFilteredExpenses() {
@@ -1038,11 +1089,15 @@
 
         // --- REPORTS LOGIC ---
         function deleteSaleTransaction(saleId) {
-            if(confirm(`Hapus transaksi ${saleId}? Data laporan keuangan akan diperbarui.`)) {
-                salesHistory = salesHistory.filter(s => s.id !== saleId);
-                localStorage.setItem('pos_sales', JSON.stringify(salesHistory));
-                renderReports();
-            }
+            openConfirmDeleteModal(
+                'Hapus Transaksi Penjualan',
+                `Apakah Anda yakin ingin menghapus transaksi ${saleId}? Data laporan keuangan dan laba bersih akan diperbarui secara otomatis.`,
+                function() {
+                    salesHistory = salesHistory.filter(s => s.id !== saleId);
+                    localStorage.setItem('pos_sales', JSON.stringify(salesHistory));
+                    renderReports();
+                }
+            );
         }
 
         function getFilteredSales() {
@@ -1142,11 +1197,15 @@
         }
 
         function clearSalesHistory() {
-            if(confirm('Hapus SEMUA riwayat penjualan? Data laba rugi akan di-reset.')) {
-                salesHistory = [];
-                localStorage.removeItem('pos_sales');
-                renderReports();
-            }
+            openConfirmDeleteModal(
+                'Reset Riwayat Penjualan',
+                'Apakah Anda yakin ingin menghapus SEMUA riwayat penjualan? Data laba rugi akan di-reset.',
+                function() {
+                    salesHistory = [];
+                    localStorage.removeItem('pos_sales');
+                    renderReports();
+                }
+            );
         }
 
         // --- EXPORT KE EXCEL RAPI (.XLSX DENGAN SHEETJS) ---
