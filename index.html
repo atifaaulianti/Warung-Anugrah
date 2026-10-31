@@ -202,13 +202,23 @@
                     </div>
                 </div>
 
-                <!-- Filter Tanggal Pengeluaran -->
+                <!-- Filter Tanggal & Kategori Pengeluaran -->
                 <div class="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                     <div class="flex items-center space-x-2">
                         <i class="fa-solid fa-calendar-days text-slate-400"></i>
-                        <span class="font-bold text-slate-700">Filter Rentang Waktu:</span>
+                        <span class="font-bold text-slate-700">Filter Pengeluaran:</span>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <div class="flex-1 sm:flex-none">
+                            <label class="text-[9px] sm:text-[10px] text-slate-400 font-bold block">Kategori</label>
+                            <select id="exp-filter-category" onchange="renderExpenses()" class="w-full sm:w-auto p-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-yellow-500">
+                                <option value="All">Semua Kategori</option>
+                                <option value="Bahan Baku Pasar">Bahan Baku</option>
+                                <option value="Operasional">Operasional</option>
+                                <option value="Gaji Karyawan">Gaji</option>
+                                <option value="Lain-lain">Lain-lain</option>
+                            </select>
+                        </div>
                         <div class="flex-1 sm:flex-none">
                             <label class="text-[9px] sm:text-[10px] text-slate-400 font-bold block">Dari Tanggal</label>
                             <input type="date" id="exp-start-date" onchange="renderExpenses()" class="w-full sm:w-auto p-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-yellow-500">
@@ -236,9 +246,9 @@
                             <div>
                                 <label class="block text-slate-600 font-medium mb-1">Kategori</label>
                                 <select id="exp-category" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
-                                    <option value="Bahan Baku">Bahan Baku</option>
+                                    <option value="Bahan Baku Pasar">Bahan Baku</option>
                                     <option value="Operasional">Operasional</option>
-                                    <option value="Gaji Karyawan">Gaji Karyawan</option>
+                                    <option value="Gaji Karyawan">Gaji</option>
                                     <option value="Lain-lain">Lain-lain</option>
                                 </select>
                             </div>
@@ -971,22 +981,25 @@
         function getFilteredExpenses() {
             const startDate = document.getElementById('exp-start-date').value;
             const endDate = document.getElementById('exp-end-date').value;
+            const filterCat = document.getElementById('exp-filter-category').value;
 
             return expensesList.filter(exp => {
                 const expDate = exp.date;
                 let matchStart = true;
                 let matchEnd = true;
+                let matchCategory = filterCat === 'All' || exp.category === filterCat;
 
                 if (startDate) matchStart = expDate >= startDate;
                 if (endDate) matchEnd = expDate <= endDate;
 
-                return matchStart && matchEnd;
+                return matchStart && matchEnd && matchCategory;
             });
         }
 
         function resetExpDateFilter() {
             document.getElementById('exp-start-date').value = '';
             document.getElementById('exp-end-date').value = '';
+            document.getElementById('exp-filter-category').value = 'All';
             renderExpenses();
         }
 
@@ -1024,6 +1037,14 @@
         }
 
         // --- REPORTS LOGIC ---
+        function deleteSaleTransaction(saleId) {
+            if(confirm(`Hapus transaksi ${saleId}? Data laporan keuangan akan diperbarui.`)) {
+                salesHistory = salesHistory.filter(s => s.id !== saleId);
+                localStorage.setItem('pos_sales', JSON.stringify(salesHistory));
+                renderReports();
+            }
+        }
+
         function getFilteredSales() {
             const startDate = document.getElementById('rep-start-date').value;
             const endDate = document.getElementById('rep-end-date').value;
@@ -1100,9 +1121,12 @@
                     <td class="p-3"><span class="bg-yellow-100 text-red-800 border border-yellow-300 px-2 py-0.5 rounded text-[10px] font-bold">${sale.method}</span></td>
                     <td class="p-3 text-[11px] max-w-xs truncate" title="${itemsSummary}">${itemsSummary}</td>
                     <td class="p-3 text-right font-mono font-bold text-emerald-600">Rp ${sale.total.toLocaleString()}</td>
-                    <td class="p-3 text-center">
+                    <td class="p-3 text-center flex items-center justify-center space-x-1">
                         <button onclick='reprintReceipt("${sale.id}")' class="text-slate-500 hover:text-red-700 text-xs px-2 py-1 bg-slate-100 rounded border border-slate-200">
                             <i class="fa-solid fa-print mr-1"></i>Struk
+                        </button>
+                        <button onclick='deleteSaleTransaction("${sale.id}")' class="text-slate-400 hover:text-red-600 text-xs px-2 py-1 bg-red-50 hover:bg-red-100 rounded border border-red-200 transition-colors" title="Hapus Transaksi">
+                            <i class="fa-solid fa-trash"></i>
                         </button>
                     </td>
                 `;
