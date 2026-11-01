@@ -265,8 +265,8 @@
                         
                         <form id="expense-form" onsubmit="addExpense(event)" class="space-y-3 text-xs">
                             <div>
-                                <label class="block text-slate-600 font-medium mb-1">Tanggal</label>
-                                <input type="date" id="exp-date" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
+                                <label class="block text-slate-600 font-medium mb-1">Tanggal & Waktu</label>
+                                <input type="datetime-local" id="exp-date" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
                             </div>
                             <div>
                                 <label class="block text-slate-600 font-medium mb-1">Kategori</label>
@@ -303,7 +303,7 @@
                             <table class="w-full text-left text-xs text-slate-600 min-w-[500px]">
                                 <thead class="bg-slate-50 uppercase text-[10px] text-slate-400 font-bold border-b border-slate-100">
                                     <tr>
-                                        <th class="p-3">Tanggal</th>
+                                        <th class="p-3">Waktu</th>
                                         <th class="p-3">Kategori</th>
                                         <th class="p-3">Keterangan</th>
                                         <th class="p-3 text-right">Biaya</th>
@@ -616,11 +616,21 @@
 
         function formatDateOnlyStandard(dateStr) {
             if (!dateStr) return "--";
+            const dateObj = new Date(dateStr);
+            if (!isNaN(dateObj)) {
+                return formatDateStandard(dateObj);
+            }
             const parts = dateStr.split('-');
             if (parts.length === 3) {
                 return `${parts[2]}/${parts[1]}/${parts[0]}`;
             }
             return dateStr;
+        }
+
+        function setNowToDatetimeLocalInput(inputId) {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById(inputId).value = now.toISOString().slice(0, 16);
         }
 
         // --- INITIALIZATION & REALTIME FIREBASE LISTENERS ---
@@ -629,8 +639,8 @@
             updateTime();
             setInterval(updateTime, 1000);
             
-            // Set default date for expense form to today
-            document.getElementById('exp-date').valueAsDate = new Date();
+            // Set default date & time for expense form to now
+            setNowToDatetimeLocalInput('exp-date');
 
             // FireBase Realtime Subscription - Penjualan (sales)
             window.fs.onSnapshot(window.fs.collection(window.db, "sales"), (snapshot) => {
@@ -643,7 +653,7 @@
             // FireBase Realtime Subscription - Pengeluaran (expenses)
             window.fs.onSnapshot(window.fs.collection(window.db, "expenses"), (snapshot) => {
                 expensesList = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-                // Urutkan berdasarkan tanggal terbaru
+                // Urutkan berdasarkan tanggal & jam terbaru
                 expensesList.sort((a, b) => new Date(b.date) - new Date(a.date));
                 renderExpenses();
             });
@@ -1028,20 +1038,22 @@
         // SYNC: Tambah Pengeluaran Baru ke Firestore
         async function addExpense(e) {
             e.preventDefault();
-            const date = document.getElementById('exp-date').value;
+            const dateVal = document.getElementById('exp-date').value;
             const category = document.getElementById('exp-category').value;
             const desc = document.getElementById('exp-desc').value.trim();
             const amount = parseFloat(document.getElementById('exp-amount').value);
             const btnSave = document.getElementById('btn-save-expense');
 
-            if (!date || !desc || isNaN(amount) || amount <= 0) return;
+            if (!dateVal || !desc || isNaN(amount) || amount <= 0) return;
 
             btnSave.disabled = true;
             btnSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Menyimpan...`;
 
+            const isoDate = new Date(dateVal).toISOString();
+
             const newExp = {
                 id: 'EXP-' + Date.now().toString().slice(-6),
-                date: date,
+                date: isoDate,
                 category: category,
                 desc: desc,
                 amount: amount
@@ -1054,6 +1066,7 @@
                 // Reset Form
                 document.getElementById('exp-desc').value = '';
                 document.getElementById('exp-amount').value = '';
+                setNowToDatetimeLocalInput('exp-date');
             } catch (err) {
                 alert("Gagal menyimpan pengeluaran: " + err.message);
             } finally {
@@ -1101,13 +1114,13 @@
             const filterCat = document.getElementById('exp-filter-category').value;
 
             return expensesList.filter(exp => {
-                const expDate = exp.date;
+                const expDateStr = exp.date.slice(0, 10);
                 let matchStart = true;
                 let matchEnd = true;
                 let matchCategory = filterCat === 'All' || exp.category === filterCat;
 
-                if (startDate) matchStart = expDate >= startDate;
-                if (endDate) matchEnd = expDate <= endDate;
+                if (startDate) matchStart = expDateStr >= startDate;
+                if (endDate) matchEnd = expDateStr <= endDate;
 
                 return matchStart && matchEnd && matchCategory;
             });
@@ -1139,7 +1152,7 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50";
                 tr.innerHTML = `
-                    <td class="p-3 font-mono">${formatDateOnlyStandard(exp.date)}</td>
+                    <td class="p-3 text-[11px] font-mono text-slate-500">${formatDateStandard(new Date(exp.date))}</td>
                     <td class="p-3"><span class="bg-red-50 text-red-700 px-2 py-0.5 rounded text-[10px] font-semibold">${exp.category}</span></td>
                     <td class="p-3 font-medium text-slate-800">${exp.desc}</td>
                     <td class="p-3 text-right font-mono font-bold text-red-600">Rp ${exp.amount.toLocaleString()}</td>
@@ -1197,11 +1210,11 @@
             const startDate = document.getElementById('rep-start-date').value;
             const endDate = document.getElementById('rep-end-date').value;
             const filteredExpenses = expensesList.filter(exp => {
-                const expDate = exp.date;
+                const expDateStr = exp.date.slice(0, 10);
                 let matchStart = true;
                 let matchEnd = true;
-                if (startDate) matchStart = expDate >= startDate;
-                if (endDate) matchEnd = expDate <= endDate;
+                if (startDate) matchStart = expDateStr >= startDate;
+                if (endDate) matchEnd = expDateStr <= endDate;
                 return matchStart && matchEnd;
             });
 
@@ -1290,11 +1303,11 @@
             const endDate = document.getElementById('rep-end-date').value;
             
             const filteredExpenses = expensesList.filter(exp => {
-                const expDate = exp.date;
+                const expDateStr = exp.date.slice(0, 10);
                 let matchStart = true;
                 let matchEnd = true;
-                if (startDate) matchStart = expDate >= startDate;
-                if (endDate) matchEnd = expDate <= endDate;
+                if (startDate) matchStart = expDateStr >= startDate;
+                if (endDate) matchEnd = expDateStr <= endDate;
                 return matchStart && matchEnd;
             });
 
@@ -1337,13 +1350,13 @@
 
             // 3. DATA SHEET PENGELUARAN
             const expData = [
-                ["ID Pengeluaran", "Tanggal", "Kategori", "Keterangan", "Jumlah Biaya (Rp)"]
+                ["ID Pengeluaran", "Waktu", "Kategori", "Keterangan", "Jumlah Biaya (Rp)"]
             ];
             filteredExpenses.forEach(e => {
-                expData.push([e.id, formatDateOnlyStandard(e.date), e.category, e.desc, e.amount]);
+                expData.push([e.id, formatDateStandard(new Date(e.date)), e.category, e.desc, e.amount]);
             });
             const wsExp = XLSX.utils.aoa_to_sheet(expData);
-            wsExp['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 35 }, { wch: 18 }];
+            wsExp['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 20 }, { wch: 35 }, { wch: 18 }];
             XLSX.utils.book_append_sheet(wb, wsExp, "Pengeluaran");
 
             // Generate & Download File .xlsx
