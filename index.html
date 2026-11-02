@@ -188,8 +188,12 @@
                 <div class="p-3 sm:p-4 border-t border-slate-100 bg-slate-50 space-y-2.5">
                     <div class="space-y-1 text-xs">
                         <div class="flex justify-between text-slate-500">
-                            <span>Subtotal</span>
+                            <span>Subtotal Menu</span>
                             <span class="font-mono font-medium" id="cart-subtotal">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-slate-500">
+                            <span>Total Biaya Tambahan</span>
+                            <span class="font-mono font-medium text-amber-700" id="cart-extra-fee-total">Rp 0</span>
                         </div>
                         <div class="flex justify-between text-slate-800 text-sm sm:text-base font-bold pt-1 border-t border-slate-200">
                             <span>TOTAL</span>
@@ -760,6 +764,7 @@
                     qty: 1,
                     selectedOption: menuItem.options.length > 0 ? menuItem.options[0] : '',
                     availableOptions: menuItem.options,
+                    extraFee: 0,
                     note: ''
                 });
             }
@@ -778,6 +783,35 @@
             cart[index].selectedOption = val;
         }
 
+        function updateCartExtraFee(index, val) {
+            const amount = parseFloat(val);
+            cart[index].extraFee = (!isNaN(amount) && amount > 0) ? amount : 0;
+            
+            // Hitung ulang total keranjang (extraFee flat/tetap 1x, tidak dikali qty)
+            let subtotal = 0;
+            let totalExtraFee = 0;
+
+            cart.forEach((item, idx) => {
+                const itemSubtotal = item.price * item.qty;
+                const itemExtraTotal = item.extraFee || 0; // Tetap 1x per baris pesanan
+                subtotal += itemSubtotal;
+                totalExtraFee += itemExtraTotal;
+
+                // Update harga total per item jika elemennya ada
+                const itemTotalEl = document.getElementById(`cart-item-total-${idx}`);
+                if (itemTotalEl) {
+                    itemTotalEl.innerText = `Rp ${(itemSubtotal + itemExtraTotal).toLocaleString()}`;
+                }
+            });
+
+            const grandTotal = subtotal + totalExtraFee;
+
+            // Update ringkasan total di bagian bawah keranjang
+            document.getElementById('cart-subtotal').innerText = `Rp ${subtotal.toLocaleString()}`;
+            document.getElementById('cart-extra-fee-total').innerText = `Rp ${totalExtraFee.toLocaleString()}`;
+            document.getElementById('cart-total').innerText = `Rp ${grandTotal.toLocaleString()}`;
+        }
+
         function clearCart() {
             cart = [];
             document.getElementById('customer-name').value = '';
@@ -787,6 +821,7 @@
         function renderCart() {
             const container = document.getElementById('cart-items-container');
             const subtotalEl = document.getElementById('cart-subtotal');
+            const extraFeeTotalEl = document.getElementById('cart-extra-fee-total');
             const totalEl = document.getElementById('cart-total');
             const btnCheckout = document.getElementById('btn-checkout');
 
@@ -797,6 +832,7 @@
                         <p class="text-xs">Keranjang masih kosong.<br>Klik menu di atas untuk memasukkan pesanan.</p>
                     </div>`;
                 subtotalEl.innerText = 'Rp 0';
+                extraFeeTotalEl.innerText = 'Rp 0';
                 totalEl.innerText = 'Rp 0';
                 btnCheckout.disabled = true;
                 btnCheckout.classList.remove('bg-red-700', 'hover:bg-red-800', 'text-white');
@@ -805,11 +841,16 @@
             }
 
             container.innerHTML = '';
-            let total = 0;
+            let subtotal = 0;
+            let totalExtraFee = 0;
 
             cart.forEach((item, idx) => {
-                const itemTotal = item.price * item.qty;
-                total += itemTotal;
+                const itemSubtotal = item.price * item.qty;
+                const itemExtraTotal = item.extraFee || 0; // Tetap 1x
+                const itemTotal = itemSubtotal + itemExtraTotal;
+                
+                subtotal += itemSubtotal;
+                totalExtraFee += itemExtraTotal;
 
                 const itemEl = document.createElement('div');
                 itemEl.className = "py-2 space-y-1.5";
@@ -832,7 +873,16 @@
                             ${optionsSelectHtml}
                         </div>
                         <div class="text-right">
-                            <span class="font-mono font-bold text-xs text-slate-800">Rp ${itemTotal.toLocaleString()}</span>
+                            <span id="cart-item-total-${idx}" class="font-mono font-bold text-xs text-slate-800">Rp ${itemTotal.toLocaleString()}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="text-[10px] font-medium text-slate-400">Tambahan:</span>
+                        <div class="relative flex-1">
+                            <span class="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">Rp</span>
+                            <input type="number" min="0" placeholder="0" value="${item.extraFee || ''}" 
+                                oninput="updateCartExtraFee(${idx}, this.value)"
+                                class="w-full pl-6 pr-2 py-0.5 text-[10px] border border-slate-200 rounded bg-slate-50 font-mono focus:outline-none focus:ring-1 focus:ring-yellow-500">
                         </div>
                     </div>
                     <div class="flex justify-between items-center text-xs">
@@ -847,8 +897,11 @@
                 container.appendChild(itemEl);
             });
 
-            subtotalEl.innerText = `Rp ${total.toLocaleString()}`;
-            totalEl.innerText = `Rp ${total.toLocaleString()}`;
+            const grandTotal = subtotal + totalExtraFee;
+
+            subtotalEl.innerText = `Rp ${subtotal.toLocaleString()}`;
+            extraFeeTotalEl.innerText = `Rp ${totalExtraFee.toLocaleString()}`;
+            totalEl.innerText = `Rp ${grandTotal.toLocaleString()}`;
 
             btnCheckout.disabled = false;
             btnCheckout.classList.remove('bg-slate-300', 'text-slate-500');
@@ -857,7 +910,7 @@
 
         // --- CHECKOUT & PAYMENT MODAL ---
         function getCartTotal() {
-            return cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            return cart.reduce((sum, i) => sum + (i.price * i.qty) + (i.extraFee || 0), 0);
         }
 
         function openPaymentModal() {
@@ -991,14 +1044,21 @@
 
             sale.items.forEach(i => {
                 const optText = i.selectedOption ? ` (${i.selectedOption})` : '';
+                const extraFeeNum = i.extraFee || 0;
+                const extraText = extraFeeNum > 0 ? ` (+Rp ${extraFeeNum.toLocaleString()})` : '';
+                
+                // Perhitungan subtotal menu + biaya tambahan flat 1x
+                const itemSubtotal = i.price * i.qty;
+                const itemTotal = itemSubtotal + extraFeeNum;
+
                 const row = document.createElement('div');
                 row.innerHTML = `
                     <div class="flex justify-between font-bold">
-                        <span>${i.name}${optText}</span>
+                        <span>${i.name}${optText}${extraText}</span>
                     </div>
                     <div class="flex justify-between text-slate-500">
                         <span>${i.qty} x ${i.price.toLocaleString()}</span>
-                        <span>Rp ${(i.qty * i.price).toLocaleString()}</span>
+                        <span>Rp ${itemTotal.toLocaleString()}</span>
                     </div>
                 `;
                 itemsContainer.appendChild(row);
@@ -1248,7 +1308,10 @@
             }
 
             filteredSales.forEach(sale => {
-                const itemsSummary = sale.items.map(i => `${i.name} (x${i.qty})`).join(', ');
+                const itemsSummary = sale.items.map(i => {
+                    const extraStr = (i.extraFee && i.extraFee > 0) ? ` [+Rp ${i.extraFee.toLocaleString()}]` : '';
+                    return `${i.name}${extraStr} (x${i.qty})`;
+                }).join(', ');
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50";
                 tr.innerHTML = `
@@ -1341,7 +1404,10 @@
                 ["No. Nota", "Waktu Transaksi", "Pelanggan / Meja", "Tipe Pesanan", "Metode Pembayaran", "Detail Menu Pesanan", "Total Tagihan (Rp)"]
             ];
             filteredSales.forEach(s => {
-                const itemsStr = s.items.map(i => `${i.name} (x${i.qty})`).join(', ');
+                const itemsStr = s.items.map(i => {
+                    const extraStr = (i.extraFee && i.extraFee > 0) ? ` [+Rp ${i.extraFee.toLocaleString()}]` : '';
+                    return `${i.name}${extraStr} (x${i.qty})`;
+                }).join(', ');
                 salesData.push([s.id, formatDateStandard(new Date(s.date)), s.customer, s.type, s.method, itemsStr, s.total]);
             });
             const wsSales = XLSX.utils.aoa_to_sheet(salesData);
