@@ -149,30 +149,37 @@
 
             <!-- Right Side: Cart / Order Summary -->
             <div class="w-full md:w-80 lg:w-96 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0 min-h-0">
-                <!-- Cart Header -->
-                <div class="p-3 sm:p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                    <div>
+                <!-- Cart Header (Satu tampilan tanggal & jam yang bisa diubah) -->
+                <div class="p-3 sm:p-4 border-b border-slate-100 flex justify-between items-start gap-2 bg-slate-50">
+                    <div class="space-y-1 flex-1 min-w-0">
                         <h2 class="font-bold text-sm sm:text-base text-slate-800">Pesanan Aktif</h2>
-                        <p class="text-[10px] sm:text-xs text-slate-500" id="current-time-display">--</p>
+                        <div class="flex items-center gap-1.5">
+                            <input type="datetime-local" id="pos-date" 
+                                class="px-2 py-0.5 text-[11px] font-mono text-slate-600 border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-yellow-500 max-w-full">
+                            <button type="button" onclick="setNowToDatetimeLocalInput('pos-date')" 
+                                class="text-[10px] text-red-700 hover:underline font-semibold whitespace-nowrap">Sekarang</button>
+                        </div>
                     </div>
-                    <button onclick="clearCart()" class="text-[10px] sm:text-xs text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded border border-red-200 bg-red-50">
+                    <button onclick="clearCart()" class="text-[10px] sm:text-xs text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded border border-red-200 bg-red-50 flex-shrink-0">
                         <i class="fa-solid fa-trash-can mr-1"></i>Reset
                     </button>
                 </div>
 
                 <!-- Customer info & Table -->
-                <div class="p-2.5 sm:p-3 border-b border-slate-100 grid grid-cols-2 gap-2 bg-slate-50/50">
-                    <div>
-                        <label class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">Pelanggan / Meja</label>
-                        <input type="text" id="customer-name" placeholder="Contoh: Meja 04" 
-                            class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500">
-                    </div>
-                    <div>
-                        <label class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">Tipe</label>
-                        <select id="order-type" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500">
-                            <option value="Dine-in">Makan di Tempat</option>
-                            <option value="Takeaway">Bawa Pulang</option>
-                        </select>
+                <div class="p-2.5 sm:p-3 border-b border-slate-100 bg-slate-50/50">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">Pelanggan / Meja</label>
+                            <input type="text" id="customer-name" placeholder="Contoh: Meja 04" 
+                                class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500">
+                        </div>
+                        <div>
+                            <label class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">Tipe</label>
+                            <select id="order-type" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500">
+                                <option value="Dine-in">Makan di Tempat</option>
+                                <option value="Takeaway">Bawa Pulang</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -352,7 +359,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <div>
                         <h2 class="text-lg sm:text-xl font-bold text-slate-800">Laporan Keuangan & Penjualan</h2>
-                        <p class="text-xs text-slate-500">Ringkasan transaksi kasir, pengeluaran, dan estimasi laba bersih.</p>
+                        <p class="text-xs text-slate-500">Ringkasan transaksi kasir, porsi keluar, pengeluaran, dan estimasi laba bersih.</p>
                     </div>
                     <button onclick="exportToExcelFormatted()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2.5 rounded-xl font-bold flex items-center justify-center space-x-2 shadow-sm">
                         <i class="fa-solid fa-file-excel text-base"></i>
@@ -360,13 +367,21 @@
                     </button>
                 </div>
 
-                <!-- Filter Rentang Waktu Laporan -->
+                <!-- Filter Rentang Waktu & Menu Utama Laporan -->
                 <div class="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                     <div class="flex items-center space-x-2">
                         <i class="fa-solid fa-filter text-red-700"></i>
-                        <span class="font-bold text-slate-700">Filter Periode Laporan:</span>
+                        <span class="font-bold text-slate-700">Filter Laporan:</span>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <div class="flex-1 sm:flex-none">
+                            <label class="text-[9px] sm:text-[10px] text-slate-400 font-bold block">Menu Utama</label>
+                            <select id="rep-menu-filter" onchange="renderReports()" class="w-full sm:w-44 p-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-yellow-500 text-slate-700 font-medium">
+                                <option value="All">Semua Menu Utama</option>
+                                <option value="Sop Konro">Sop Konro</option>
+                                <option value="Palekko">Palekko</option>
+                            </select>
+                        </div>
                         <div class="flex-1 sm:flex-none">
                             <label class="text-[9px] sm:text-[10px] text-slate-400 font-bold block">Tanggal Mulai</label>
                             <input type="date" id="rep-start-date" onchange="renderReports()" class="w-full sm:w-auto p-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-yellow-500">
@@ -376,22 +391,34 @@
                             <input type="date" id="rep-end-date" onchange="renderReports()" class="w-full sm:w-auto p-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-yellow-500">
                         </div>
                         <button onclick="resetReportDateFilter()" class="mt-3 sm:mt-4 w-full sm:w-auto px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-semibold text-xs">
-                            Reset Periode
+                            Reset Filter
                         </button>
                     </div>
                 </div>
 
                 <!-- Financial Cards Summary -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <!-- Total Penjualan -->
                     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-xs font-bold uppercase text-slate-400">Total Penjualan (Omzet)</p>
-                            <h3 class="text-xl sm:text-2xl font-black text-emerald-600 font-mono mt-1" id="report-total-sales">Rp 0</h3>
+                            <h3 class="text-lg sm:text-xl font-black text-emerald-600 font-mono mt-1" id="report-total-sales">Rp 0</h3>
                             <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1" id="report-sales-count">0 Transaksi</p>
                         </div>
-                        <div class="bg-emerald-50 text-emerald-600 p-3 sm:p-3.5 rounded-2xl">
-                            <i class="fa-solid fa-chart-line text-xl sm:text-2xl"></i>
+                        <div class="bg-emerald-50 text-emerald-600 p-3 rounded-2xl">
+                            <i class="fa-solid fa-chart-line text-lg sm:text-xl"></i>
+                        </div>
+                    </div>
+
+                    <!-- Total Porsi Keluar -->
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold uppercase text-slate-400">Total Porsi Keluar</p>
+                            <h3 class="text-lg sm:text-xl font-black text-amber-600 font-mono mt-1" id="report-total-portions">0 Porsi</h3>
+                            <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1" id="report-portions-detail">Konro: 0 | Palekko: 0</p>
+                        </div>
+                        <div class="bg-amber-50 text-amber-600 p-3 rounded-2xl">
+                            <i class="fa-solid fa-bowl-food text-lg sm:text-xl"></i>
                         </div>
                     </div>
 
@@ -399,11 +426,11 @@
                     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-xs font-bold uppercase text-slate-400">Total Pengeluaran</p>
-                            <h3 class="text-xl sm:text-2xl font-black text-red-500 font-mono mt-1" id="report-total-expenses">Rp 0</h3>
+                            <h3 class="text-lg sm:text-xl font-black text-red-500 font-mono mt-1" id="report-total-expenses">Rp 0</h3>
                             <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1" id="report-expenses-count">0 Catatan</p>
                         </div>
-                        <div class="bg-red-50 text-red-500 p-3 sm:p-3.5 rounded-2xl">
-                            <i class="fa-solid fa-arrow-trend-down text-xl sm:text-2xl"></i>
+                        <div class="bg-red-50 text-red-500 p-3 rounded-2xl">
+                            <i class="fa-solid fa-arrow-trend-down text-lg sm:text-xl"></i>
                         </div>
                     </div>
 
@@ -411,11 +438,11 @@
                     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-xs font-bold uppercase text-slate-400">Estimasi Laba Bersih</p>
-                            <h3 class="text-xl sm:text-2xl font-black text-emerald-600 font-mono mt-1" id="report-net-profit">Rp 0</h3>
+                            <h3 class="text-lg sm:text-xl font-black text-emerald-600 font-mono mt-1" id="report-net-profit">Rp 0</h3>
                             <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1">Omzet − Pengeluaran</p>
                         </div>
-                        <div class="bg-yellow-100 text-red-700 p-3 sm:p-3.5 rounded-2xl">
-                            <i class="fa-solid fa-sack-dollar text-xl sm:text-2xl"></i>
+                        <div class="bg-yellow-100 text-red-700 p-3 rounded-2xl">
+                            <i class="fa-solid fa-sack-dollar text-lg sm:text-xl"></i>
                         </div>
                     </div>
                 </div>
@@ -423,11 +450,14 @@
                 <!-- History Sales Table (Dibatasi tinggi & bisa digeser/scroll) -->
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                     <div class="p-3 sm:p-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
-                        <h3 class="font-bold text-slate-800 text-sm">Riwayat Transaksi Penjualan</h3>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm">Riwayat Transaksi Penjualan</h3>
+                            <p class="text-[11px] text-slate-500">Total porsi terjual pada filter ini: <span id="table-total-portions-badge" class="font-bold text-amber-700">0 Porsi</span></p>
+                        </div>
                         <button onclick="clearSalesHistory()" class="text-xs text-red-500 hover:underline font-medium">Reset Riwayat</button>
                     </div>
                     <div class="overflow-x-auto overflow-y-auto max-h-[380px]">
-                        <table class="w-full text-left text-xs text-slate-600 min-w-[650px]">
+                        <table class="w-full text-left text-xs text-slate-600 min-w-[720px]">
                             <thead class="bg-slate-50 uppercase text-[10px] text-slate-400 font-bold border-b border-slate-100 sticky top-0 z-10 shadow-xs">
                                 <tr>
                                     <th class="p-3 bg-slate-50">No. Nota</th>
@@ -435,6 +465,7 @@
                                     <th class="p-3 bg-slate-50">Pelanggan/Meja</th>
                                     <th class="p-3 bg-slate-50">Metode</th>
                                     <th class="p-3 bg-slate-50">Detail Pesanan</th>
+                                    <th class="p-3 bg-slate-50 text-center">Porsi</th>
                                     <th class="p-3 bg-slate-50 text-right">Total</th>
                                     <th class="p-3 bg-slate-50 text-center">Aksi</th>
                                 </tr>
@@ -626,6 +657,40 @@
         let selectedCategory = 'All';
         let currentPaymentMethod = 'Tunai';
 
+        // --- HELPER UNTUK HITUNG JUMLAH PORSI MAKANAN UTAMA ---
+        function getSalePortionStats(sale, menuFilter = 'All') {
+            let total = 0;
+            let konro = 0;
+            let palekko = 0;
+            if (!sale || !Array.isArray(sale.items)) return { total, konro, palekko };
+
+            sale.items.forEach(item => {
+                const menuDef = MENU_DATA.find(m => m.id === item.id || m.name === item.name);
+                const qty = Number(item.qty) || 0;
+                if (menuDef && menuDef.category === 'Makanan') {
+                    const isKonro = menuDef.id === 1 || item.name.toLowerCase().includes('konro');
+                    const isPalekko = menuDef.id === 3 || item.name.toLowerCase().includes('palekko');
+
+                    if (menuFilter === 'Sop Konro') {
+                        if (isKonro) {
+                            total += qty;
+                            konro += qty;
+                        }
+                    } else if (menuFilter === 'Palekko') {
+                        if (isPalekko) {
+                            total += qty;
+                            palekko += qty;
+                        }
+                    } else {
+                        total += qty;
+                        if (isKonro) konro += qty;
+                        else if (isPalekko) palekko += qty;
+                    }
+                }
+            });
+            return { total, konro, palekko };
+        }
+
         // --- HELPER UNTUK SERAGAMKAN FORMAT TANGGAL (DD/MM/YYYY, HH.mm) ---
         function formatDateStandard(dateObj) {
             if (!(dateObj instanceof Date) || isNaN(dateObj)) return "--";
@@ -653,16 +718,16 @@
         function setNowToDatetimeLocalInput(inputId) {
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById(inputId).value = now.toISOString().slice(0, 16);
+            const el = document.getElementById(inputId);
+            if (el) el.value = now.toISOString().slice(0, 16);
         }
 
         // --- INITIALIZATION & REALTIME FIREBASE LISTENERS ---
         window.onload = function() {
             renderMenu();
-            updateTime();
-            setInterval(updateTime, 1000);
             
-            // Set default date & time for expense form to now
+            // Set default date & time for POS and expense form to now
+            setNowToDatetimeLocalInput('pos-date');
             setNowToDatetimeLocalInput('exp-date');
 
             // Tutup dropdown kategori pengeluaran saat klik di luar
@@ -690,10 +755,6 @@
                 renderExpenses();
             });
         };
-
-        function updateTime() {
-            document.getElementById('current-time-display').innerText = formatDateStandard(new Date());
-        }
 
         // --- NAVIGATION LOGIC ---
         function switchTab(tabName) {
@@ -843,6 +904,7 @@
         function clearCart() {
             cart = [];
             document.getElementById('customer-name').value = '';
+            setNowToDatetimeLocalInput('pos-date');
             renderCart();
         }
 
@@ -1026,6 +1088,9 @@
                 change = cashGiven - total;
             }
 
+            const posDateVal = document.getElementById('pos-date').value;
+            const saleDateIso = posDateVal ? new Date(posDateVal).toISOString() : new Date().toISOString();
+
             const customerName = document.getElementById('customer-name').value.trim() || 'Pelanggan Umum';
             const orderType = document.getElementById('order-type').value;
             const btnSubmit = document.getElementById('btn-submit-order');
@@ -1035,7 +1100,7 @@
 
             const newSale = {
                 id: 'TRX-' + Date.now().toString().slice(-6),
-                date: new Date().toISOString(),
+                date: saleDateIso,
                 customer: customerName,
                 type: orderType,
                 items: [...cart],
@@ -1301,20 +1366,28 @@
         function getFilteredSales() {
             const startDate = document.getElementById('rep-start-date').value;
             const endDate = document.getElementById('rep-end-date').value;
+            const menuFilter = document.getElementById('rep-menu-filter').value;
 
             return salesHistory.filter(sale => {
                 const saleDateStr = sale.date.slice(0, 10);
                 let matchStart = true;
                 let matchEnd = true;
+                let matchMenu = true;
 
                 if (startDate) matchStart = saleDateStr >= startDate;
                 if (endDate) matchEnd = saleDateStr <= endDate;
 
-                return matchStart && matchEnd;
+                if (menuFilter !== 'All') {
+                    const stats = getSalePortionStats(sale, menuFilter);
+                    matchMenu = stats.total > 0;
+                }
+
+                return matchStart && matchEnd && matchMenu;
             });
         }
 
         function resetReportDateFilter() {
+            document.getElementById('rep-menu-filter').value = 'All';
             document.getElementById('rep-start-date').value = '';
             document.getElementById('rep-end-date').value = '';
             renderReports();
@@ -1322,6 +1395,7 @@
 
         function renderReports() {
             const filteredSales = getFilteredSales();
+            const menuFilter = document.getElementById('rep-menu-filter').value;
             
             const startDate = document.getElementById('rep-start-date').value;
             const endDate = document.getElementById('rep-end-date').value;
@@ -1338,8 +1412,29 @@
             const totalExpenses = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
             const netProfit = totalSales - totalExpenses;
 
+            // Hitung total porsi keluar berdasarkan filter menu utama
+            let totalPortions = 0;
+            let totalKonro = 0;
+            let totalPalekko = 0;
+            filteredSales.forEach(sale => {
+                const stats = getSalePortionStats(sale, menuFilter);
+                totalPortions += stats.total;
+                totalKonro += stats.konro;
+                totalPalekko += stats.palekko;
+            });
+
             document.getElementById('report-total-sales').innerText = `Rp ${totalSales.toLocaleString()}`;
             document.getElementById('report-sales-count').innerText = `${filteredSales.length} Transaksi`;
+
+            document.getElementById('report-total-portions').innerText = `${totalPortions} Porsi`;
+            if (menuFilter === 'Sop Konro') {
+                document.getElementById('report-portions-detail').innerText = `Khusus Sop Konro: ${totalKonro} Porsi`;
+            } else if (menuFilter === 'Palekko') {
+                document.getElementById('report-portions-detail').innerText = `Khusus Palekko: ${totalPalekko} Porsi`;
+            } else {
+                document.getElementById('report-portions-detail').innerText = `Konro: ${totalKonro} | Palekko: ${totalPalekko}`;
+            }
+            document.getElementById('table-total-portions-badge').innerText = `${totalPortions} Porsi`;
 
             document.getElementById('report-total-expenses').innerText = `Rp ${totalExpenses.toLocaleString()}`;
             document.getElementById('report-expenses-count').innerText = `${filteredExpenses.length} Catatan`;
@@ -1359,11 +1454,12 @@
             tbody.innerHTML = '';
 
             if(filteredSales.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-400">Belum ada transaksi penjualan pada rentang waktu ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400">Belum ada transaksi penjualan pada filter ini.</td></tr>`;
                 return;
             }
 
             filteredSales.forEach(sale => {
+                const portionStats = getSalePortionStats(sale, menuFilter);
                 const itemsSummary = sale.items.map(i => {
                     const extraStr = (i.extraFee && i.extraFee > 0) ? ` [+Rp ${i.extraFee.toLocaleString()}]` : '';
                     return `${i.name}${extraStr} (x${i.qty})`;
@@ -1376,6 +1472,7 @@
                     <td class="p-3 font-medium text-slate-800">${sale.customer} <span class="text-[10px] text-slate-400">(${sale.type})</span></td>
                     <td class="p-3"><span class="bg-yellow-100 text-red-800 border border-yellow-300 px-2 py-0.5 rounded text-[10px] font-bold">${sale.method}</span></td>
                     <td class="p-3 text-[11px] max-w-xs truncate" title="${itemsSummary}">${itemsSummary}</td>
+                    <td class="p-3 text-center"><span class="bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded font-mono font-bold text-[11px]">${portionStats.total}</span></td>
                     <td class="p-3 text-right font-mono font-bold text-emerald-600">Rp ${sale.total.toLocaleString()}</td>
                     <td class="p-3 text-center flex items-center justify-center space-x-1">
                         <button onclick='reprintReceipt("${sale.docId}")' class="text-slate-500 hover:text-red-700 text-xs px-2 py-1 bg-slate-100 rounded border border-slate-200">
@@ -1418,6 +1515,7 @@
         // --- EXPORT KE EXCEL RAPI (.XLSX DENGAN SHEETJS) ---
         function exportToExcelFormatted() {
             const filteredSales = getFilteredSales();
+            const menuFilter = document.getElementById('rep-menu-filter').value;
             const startDate = document.getElementById('rep-start-date').value;
             const endDate = document.getElementById('rep-end-date').value;
             
@@ -1431,7 +1529,7 @@
             });
 
             if (filteredSales.length === 0 && filteredExpenses.length === 0) {
-                alert('Tidak ada data transaksi atau pengeluaran untuk di-export pada rentang waktu ini.');
+                alert('Tidak ada data transaksi atau pengeluaran untuk di-export pada filter ini.');
                 return;
             }
 
@@ -1441,33 +1539,48 @@
             const totalOmzet = filteredSales.reduce((sum, s) => sum + s.total, 0);
             const totalBiaya = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
             const labaBersih = totalOmzet - totalBiaya;
+            let totalPorsi = 0;
+            let totalKonro = 0;
+            let totalPalekko = 0;
+
+            filteredSales.forEach(s => {
+                const stats = getSalePortionStats(s, menuFilter);
+                totalPorsi += stats.total;
+                totalKonro += stats.konro;
+                totalPalekko += stats.palekko;
+            });
 
             const summaryData = [
                 ["LAPORAN REKAPITULASI KEUANGAN WARUNG ANUGRAH"],
                 ["Periode:", (startDate ? formatDateOnlyStandard(startDate) : 'Awal') + " s/d " + (endDate ? formatDateOnlyStandard(endDate) : 'Hari Ini')],
+                ["Filter Menu Utama:", menuFilter === 'All' ? 'Semua Menu Utama' : menuFilter],
                 [""],
-                ["Keterangan", "Nilai (Rp)"],
-                ["Total Penjualan (Omzet)", totalOmzet],
-                ["Total Pengeluaran", totalBiaya],
-                ["Estimasi Laba Bersih", labaBersih]
+                ["Keterangan", "Nilai"],
+                ["Total Penjualan (Omzet) (Rp)", totalOmzet],
+                ["Total Pengeluaran (Rp)", totalBiaya],
+                ["Estimasi Laba Bersih (Rp)", labaBersih],
+                ["Total Porsi Keluar", totalPorsi],
+                [" - Sop Konro (Porsi)", totalKonro],
+                [" - Palekko (Porsi)", totalPalekko]
             ];
             const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-            wsSummary['!cols'] = [{ wch: 30 }, { wch: 20 }];
+            wsSummary['!cols'] = [{ wch: 35 }, { wch: 25 }];
             XLSX.utils.book_append_sheet(wb, wsSummary, "Ringkasan Laba Rugi");
 
             // 2. DATA SHEET PENJUALAN
             const salesData = [
-                ["No. Nota", "Waktu Transaksi", "Pelanggan / Meja", "Tipe Pesanan", "Metode Pembayaran", "Detail Menu Pesanan", "Total Tagihan (Rp)"]
+                ["No. Nota", "Waktu Transaksi", "Pelanggan / Meja", "Tipe Pesanan", "Metode Pembayaran", "Detail Menu Pesanan", "Jumlah Porsi", "Total Tagihan (Rp)"]
             ];
             filteredSales.forEach(s => {
+                const stats = getSalePortionStats(s, menuFilter);
                 const itemsStr = s.items.map(i => {
                     const extraStr = (i.extraFee && i.extraFee > 0) ? ` [+Rp ${i.extraFee.toLocaleString()}]` : '';
                     return `${i.name}${extraStr} (x${i.qty})`;
                 }).join(', ');
-                salesData.push([s.id, formatDateStandard(new Date(s.date)), s.customer, s.type, s.method, itemsStr, s.total]);
+                salesData.push([s.id, formatDateStandard(new Date(s.date)), s.customer, s.type, s.method, itemsStr, stats.total, s.total]);
             });
             const wsSales = XLSX.utils.aoa_to_sheet(salesData);
-            wsSales['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 20 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 18 }];
+            wsSales['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 20 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 16 }, { wch: 18 }];
             XLSX.utils.book_append_sheet(wb, wsSales, "Penjualan");
 
             // 3. DATA SHEET PENGELUARAN
