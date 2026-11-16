@@ -101,9 +101,6 @@
                 <button onclick="switchTab('pos')" id="tab-pos" class="tab-btn px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg bg-yellow-400 text-red-950 shadow transition-all whitespace-nowrap">
                     <i class="fa-solid font-bold fa-cash-register mr-1"></i> Kasir
                 </button>
-                <button onclick="switchTab('capital')" id="tab-capital" class="tab-btn px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg text-yellow-100 hover:text-white hover:bg-red-800/50 transition-all whitespace-nowrap">
-                    <i class="fa-solid fa-vault mr-1"></i> Modal
-                </button>
                 <button onclick="switchTab('expenses')" id="tab-expenses" class="tab-btn px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg text-yellow-100 hover:text-white hover:bg-red-800/50 transition-all whitespace-nowrap">
                     <i class="fa-solid fa-receipt mr-1"></i> Pengeluaran
                 </button>
@@ -215,89 +212,7 @@
         </section>
 
         <!-- ========================================== -->
-        <!-- 2. HALAMAN SALDO / MODAL (CAPITAL) -->
-        <!-- ========================================== -->
-        <section id="view-capital" class="h-full p-3 sm:p-6 overflow-y-auto pb-10 md:pb-6 hidden">
-            <div class="max-w-5xl mx-auto space-y-4 sm:space-y-6">
-                <!-- Header -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <div>
-                        <h2 class="text-lg sm:text-xl font-bold text-slate-800">Pencatatan Saldo & Modal Awal</h2>
-                        <p class="text-xs text-slate-500">Catat modal awal buka warung, kas laci, atau penambahan modal usaha.</p>
-                    </div>
-                    <div class="bg-blue-50 text-blue-700 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl border border-blue-100 flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-start">
-                        <i class="fa-solid fa-vault text-base sm:text-lg"></i>
-                        <div>
-                            <span class="text-[9px] sm:text-[10px] uppercase font-bold text-blue-400 block">Total Modal Masuk</span>
-                            <span class="font-mono font-bold text-sm sm:text-base" id="total-capital-badge">Rp 0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                    <!-- Form Input Saldo / Modal -->
-                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 sm:space-y-4">
-                        <h3 class="font-bold text-slate-800 border-b pb-2 text-sm">Tambah Saldo / Modal Baru</h3>
-                        
-                        <form id="capital-form" onsubmit="addCapital(event)" class="space-y-3 text-xs">
-                            <div>
-                                <label class="block text-slate-600 font-medium mb-1">Tanggal & Waktu</label>
-                                <input type="datetime-local" id="cap-date" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-slate-600 font-medium mb-1">Sumber / Jenis Modal</label>
-                                <select id="cap-source" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
-                                    <option value="Modal Awal">Modal Awal</option>
-                                    <option value="Kas Laci / Kembalian">Kas Laci / Kembalian</option>
-                                    <option value="Suntikan Dana Tambahan">Suntikan Dana Tambahan</option>
-                                    <option value="Lain-lain">Lain-lain</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-slate-600 font-medium mb-1">Keterangan</label>
-                                <input type="text" id="cap-desc" placeholder="Contoh: Modal awal buka warung / Uang receh kasir" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-slate-600 font-medium mb-1">Nominal Saldo / Modal (Rp)</label>
-                                <input type="number" id="cap-amount" min="1" placeholder="0" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none font-mono">
-                            </div>
-
-                            <button type="submit" id="btn-save-capital" class="w-full py-2.5 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl transition-all shadow-sm flex items-center justify-center space-x-2">
-                                <i class="fa-solid fa-plus text-yellow-400"></i>
-                                <span>Simpan Saldo / Modal</span>
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Tabel List Saldo / Modal -->
-                    <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                        <div class="p-3 sm:p-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
-                            <h3 class="font-bold text-slate-800 text-sm">Riwayat Penambahan Saldo / Modal</h3>
-                            <button onclick="clearCapitals()" class="text-xs text-red-500 hover:underline font-medium">Hapus Semua</button>
-                        </div>
-                        <div class="overflow-x-auto overflow-y-auto max-h-[380px]">
-                            <table class="w-full text-left text-xs text-slate-600 min-w-[500px]">
-                                <thead class="bg-slate-50 uppercase text-[10px] text-slate-400 font-bold border-b border-slate-100 sticky top-0 z-10 shadow-xs">
-                                    <tr>
-                                        <th class="p-3 bg-slate-50">Waktu</th>
-                                        <th class="p-3 bg-slate-50">Jenis</th>
-                                        <th class="p-3 bg-slate-50">Keterangan</th>
-                                        <th class="p-3 bg-slate-50 text-right">Nominal</th>
-                                        <th class="p-3 bg-slate-50 text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="capital-table-body" class="divide-y divide-slate-100">
-                                    <!-- Rows injected by JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ========================================== -->
-        <!-- 3. HALAMAN PENGELUARAN (EXPENSES) -->
+        <!-- 2. HALAMAN PENGELUARAN (EXPENSES) -->
         <!-- ========================================== -->
         <section id="view-expenses" class="h-full p-3 sm:p-6 overflow-y-auto pb-10 md:pb-6 hidden">
             <div class="max-w-5xl mx-auto space-y-4 sm:space-y-6">
@@ -429,7 +344,7 @@
         </section>
 
         <!-- ========================================== -->
-        <!-- 4. HALAMAN LAPORAN & REKAP (REPORTS) -->
+        <!-- 3. HALAMAN LAPORAN & REKAP (REPORTS) -->
         <!-- ========================================== -->
         <section id="view-reports" class="h-full p-3 sm:p-6 overflow-y-auto pb-10 md:pb-6 hidden">
             <div class="max-w-6xl mx-auto space-y-4 sm:space-y-6">
@@ -437,7 +352,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <div>
                         <h2 class="text-lg sm:text-xl font-bold text-slate-800">Laporan Keuangan & Penjualan</h2>
-                        <p class="text-xs text-slate-500">Ringkasan modal, transaksi kasir, pengeluaran, dan sisa saldo kas.</p>
+                        <p class="text-xs text-slate-500">Ringkasan transaksi kasir, pengeluaran, dan estimasi laba bersih.</p>
                     </div>
                     <button onclick="exportToExcelFormatted()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2.5 rounded-xl font-bold flex items-center justify-center space-x-2 shadow-sm">
                         <i class="fa-solid fa-file-excel text-base"></i>
@@ -467,28 +382,16 @@
                 </div>
 
                 <!-- Financial Cards Summary -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                    <!-- Total Modal -->
-                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-bold uppercase text-slate-400">Total Modal Masuk</p>
-                            <h3 class="text-lg sm:text-xl font-black text-blue-600 font-mono mt-1" id="report-total-capital">Rp 0</h3>
-                            <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1" id="report-capital-count">0 Catatan</p>
-                        </div>
-                        <div class="bg-blue-50 text-blue-600 p-3 rounded-2xl">
-                            <i class="fa-solid fa-vault text-lg sm:text-xl"></i>
-                        </div>
-                    </div>
-
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     <!-- Total Penjualan -->
                     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-bold uppercase text-slate-400">Total Penjualan</p>
-                            <h3 class="text-lg sm:text-xl font-black text-emerald-600 font-mono mt-1" id="report-total-sales">Rp 0</h3>
+                            <p class="text-xs font-bold uppercase text-slate-400">Total Penjualan (Omzet)</p>
+                            <h3 class="text-xl sm:text-2xl font-black text-emerald-600 font-mono mt-1" id="report-total-sales">Rp 0</h3>
                             <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1" id="report-sales-count">0 Transaksi</p>
                         </div>
-                        <div class="bg-emerald-50 text-emerald-600 p-3 rounded-2xl">
-                            <i class="fa-solid fa-chart-line text-lg sm:text-xl"></i>
+                        <div class="bg-emerald-50 text-emerald-600 p-3 sm:p-3.5 rounded-2xl">
+                            <i class="fa-solid fa-chart-line text-xl sm:text-2xl"></i>
                         </div>
                     </div>
 
@@ -496,23 +399,23 @@
                     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-xs font-bold uppercase text-slate-400">Total Pengeluaran</p>
-                            <h3 class="text-lg sm:text-xl font-black text-red-500 font-mono mt-1" id="report-total-expenses">Rp 0</h3>
+                            <h3 class="text-xl sm:text-2xl font-black text-red-500 font-mono mt-1" id="report-total-expenses">Rp 0</h3>
                             <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1" id="report-expenses-count">0 Catatan</p>
                         </div>
-                        <div class="bg-red-50 text-red-500 p-3 rounded-2xl">
-                            <i class="fa-solid fa-arrow-trend-down text-lg sm:text-xl"></i>
+                        <div class="bg-red-50 text-red-500 p-3 sm:p-3.5 rounded-2xl">
+                            <i class="fa-solid fa-arrow-trend-down text-xl sm:text-2xl"></i>
                         </div>
                     </div>
 
-                    <!-- Sisa Saldo Kas -->
+                    <!-- Laba Bersih -->
                     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-bold uppercase text-slate-400">Sisa Saldo Kas</p>
-                            <h3 class="text-lg sm:text-xl font-black text-emerald-600 font-mono mt-1" id="report-net-profit">Rp 0</h3>
-                            <p class="text-[10px] sm:text-[11px] text-slate-500 mt-1" id="report-operational-profit">Laba Usaha: Rp 0</p>
+                            <p class="text-xs font-bold uppercase text-slate-400">Estimasi Laba Bersih</p>
+                            <h3 class="text-xl sm:text-2xl font-black text-emerald-600 font-mono mt-1" id="report-net-profit">Rp 0</h3>
+                            <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1">Omzet − Pengeluaran</p>
                         </div>
-                        <div class="bg-yellow-100 text-red-700 p-3 rounded-2xl">
-                            <i class="fa-solid fa-sack-dollar text-lg sm:text-xl"></i>
+                        <div class="bg-yellow-100 text-red-700 p-3 sm:p-3.5 rounded-2xl">
+                            <i class="fa-solid fa-sack-dollar text-xl sm:text-2xl"></i>
                         </div>
                     </div>
                 </div>
@@ -720,7 +623,6 @@
         let cart = [];
         let salesHistory = [];
         let expensesList = [];
-        let capitalList = [];
         let selectedCategory = 'All';
         let currentPaymentMethod = 'Tunai';
 
@@ -760,9 +662,8 @@
             updateTime();
             setInterval(updateTime, 1000);
             
-            // Set default date & time for forms to now
+            // Set default date & time for expense form to now
             setNowToDatetimeLocalInput('exp-date');
-            setNowToDatetimeLocalInput('cap-date');
 
             // Tutup dropdown kategori pengeluaran saat klik di luar
             document.addEventListener('click', function(event) {
@@ -773,17 +674,10 @@
                 }
             });
 
-            // FireBase Realtime Subscription - Modal Awal (capitals)
-            window.fs.onSnapshot(window.fs.collection(window.db, "capitals"), (snapshot) => {
-                capitalList = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-                capitalList.sort((a, b) => new Date(b.date) - new Date(a.date));
-                renderCapitals();
-                renderReports();
-            });
-
             // FireBase Realtime Subscription - Penjualan (sales)
             window.fs.onSnapshot(window.fs.collection(window.db, "sales"), (snapshot) => {
                 salesHistory = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+                // Urutkan berdasarkan waktu transaksi terbaru
                 salesHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
                 renderReports();
             });
@@ -791,9 +685,9 @@
             // FireBase Realtime Subscription - Pengeluaran (expenses)
             window.fs.onSnapshot(window.fs.collection(window.db, "expenses"), (snapshot) => {
                 expensesList = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+                // Urutkan berdasarkan tanggal & jam terbaru
                 expensesList.sort((a, b) => new Date(b.date) - new Date(a.date));
                 renderExpenses();
-                renderReports();
             });
         };
 
@@ -816,7 +710,6 @@
 
             if(tabName === 'reports') renderReports();
             if(tabName === 'expenses') renderExpenses();
-            if(tabName === 'capital') renderCapitals();
         }
 
         // --- POS & MENU RENDER ---
@@ -922,15 +815,17 @@
             const amount = parseFloat(val);
             cart[index].extraFee = (!isNaN(amount) && amount > 0) ? amount : 0;
             
+            // Hitung ulang total keranjang (extraFee flat/tetap 1x, tidak dikali qty)
             let subtotal = 0;
             let totalExtraFee = 0;
 
             cart.forEach((item, idx) => {
                 const itemSubtotal = item.price * item.qty;
-                const itemExtraTotal = item.extraFee || 0;
+                const itemExtraTotal = item.extraFee || 0; // Tetap 1x per baris pesanan
                 subtotal += itemSubtotal;
                 totalExtraFee += itemExtraTotal;
 
+                // Update harga total per item jika elemennya ada
                 const itemTotalEl = document.getElementById(`cart-item-total-${idx}`);
                 if (itemTotalEl) {
                     itemTotalEl.innerText = `Rp ${(itemSubtotal + itemExtraTotal).toLocaleString()}`;
@@ -939,6 +834,7 @@
 
             const grandTotal = subtotal + totalExtraFee;
 
+            // Update ringkasan total di bagian bawah keranjang
             document.getElementById('cart-subtotal').innerText = `Rp ${subtotal.toLocaleString()}`;
             document.getElementById('cart-extra-fee-total').innerText = `Rp ${totalExtraFee.toLocaleString()}`;
             document.getElementById('cart-total').innerText = `Rp ${grandTotal.toLocaleString()}`;
@@ -978,7 +874,7 @@
 
             cart.forEach((item, idx) => {
                 const itemSubtotal = item.price * item.qty;
-                const itemExtraTotal = item.extraFee || 0;
+                const itemExtraTotal = item.extraFee || 0; // Tetap 1x
                 const itemTotal = itemSubtotal + itemExtraTotal;
                 
                 subtotal += itemSubtotal;
@@ -1050,6 +946,7 @@
             const total = getCartTotal();
             document.getElementById('modal-total-pay').innerText = `Rp ${total.toLocaleString()}`;
             
+            // Set quick cash buttons
             const quickBtnContainer = document.getElementById('quick-cash-buttons');
             quickBtnContainer.innerHTML = '';
             
@@ -1149,7 +1046,9 @@
             };
 
             try {
+                // Simpan ke Firestore Cloud Database
                 await window.fs.addDoc(window.fs.collection(window.db, "sales"), newSale);
+
                 closePaymentModal();
                 showReceipt(newSale);
                 clearCart();
@@ -1176,6 +1075,7 @@
                 const extraFeeNum = i.extraFee || 0;
                 const extraText = extraFeeNum > 0 ? ` (+Rp ${extraFeeNum.toLocaleString()})` : '';
                 
+                // Perhitungan subtotal menu + biaya tambahan flat 1x
                 const itemSubtotal = i.price * i.qty;
                 const itemTotal = itemSubtotal + extraFeeNum;
 
@@ -1222,106 +1122,6 @@
             document.getElementById('modal-confirm-delete').classList.add('hidden');
         }
 
-        // --- SALDO / MODAL (CAPITAL) LOGIC & FIREBASE SYNC ---
-        async function addCapital(e) {
-            e.preventDefault();
-            const dateVal = document.getElementById('cap-date').value;
-            const source = document.getElementById('cap-source').value;
-            const desc = document.getElementById('cap-desc').value.trim();
-            const amount = parseFloat(document.getElementById('cap-amount').value);
-            const btnSave = document.getElementById('btn-save-capital');
-
-            if (!dateVal || !desc || isNaN(amount) || amount <= 0) return;
-
-            btnSave.disabled = true;
-            btnSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Menyimpan...`;
-
-            const isoDate = new Date(dateVal).toISOString();
-
-            const newCap = {
-                id: 'MDL-' + Date.now().toString().slice(-6),
-                date: isoDate,
-                source: source,
-                desc: desc,
-                amount: amount
-            };
-
-            try {
-                await window.fs.addDoc(window.fs.collection(window.db, "capitals"), newCap);
-                document.getElementById('cap-desc').value = '';
-                document.getElementById('cap-amount').value = '';
-                setNowToDatetimeLocalInput('cap-date');
-            } catch (err) {
-                alert("Gagal menyimpan modal: " + err.message);
-            } finally {
-                btnSave.disabled = false;
-                btnSave.innerHTML = `<i class="fa-solid fa-plus text-yellow-400"></i><span>Simpan Saldo / Modal</span>`;
-            }
-        }
-
-        function deleteCapital(docId) {
-            openConfirmDeleteModal(
-                'Hapus Catatan Saldo / Modal',
-                'Apakah Anda yakin ingin menghapus catatan modal ini?',
-                async function() {
-                    try {
-                        await window.fs.deleteDoc(window.fs.doc(window.db, "capitals", docId));
-                    } catch (err) {
-                        alert("Gagal menghapus: " + err.message);
-                    }
-                }
-            );
-        }
-
-        function clearCapitals() {
-            openConfirmDeleteModal(
-                'Hapus Semua Saldo / Modal',
-                'Apakah Anda yakin ingin menghapus SEMUA catatan saldo dan modal? Tindakan ini tidak dapat dibatalkan.',
-                async function() {
-                    try {
-                        const snapshot = await window.fs.getDocs(window.fs.collection(window.db, "capitals"));
-                        const batch = window.fs.writeBatch(window.db);
-                        snapshot.docs.forEach(d => batch.delete(d.ref));
-                        await batch.commit();
-                    } catch (err) {
-                        alert("Gagal menghapus semua modal: " + err.message);
-                    }
-                }
-            );
-        }
-
-        function renderCapitals() {
-            const tbody = document.getElementById('capital-table-body');
-            const totalBadge = document.getElementById('total-capital-badge');
-            
-            tbody.innerHTML = '';
-            let totalCap = 0;
-
-            if(capitalList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada saldo atau modal awal dicatat.</td></tr>`;
-                totalBadge.innerText = 'Rp 0';
-                return;
-            }
-
-            capitalList.forEach(cap => {
-                totalCap += cap.amount;
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50";
-                tr.innerHTML = `
-                    <td class="p-3 text-[11px] font-mono text-slate-500">${formatDateStandard(new Date(cap.date))}</td>
-                    <td class="p-3"><span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-semibold">${cap.source}</span></td>
-                    <td class="p-3 font-medium text-slate-800">${cap.desc}</td>
-                    <td class="p-3 text-right font-mono font-bold text-blue-600">Rp ${cap.amount.toLocaleString()}</td>
-                    <td class="p-3 text-center">
-                        <button onclick="deleteCapital('${cap.docId}')" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            totalBadge.innerText = `Rp ${totalCap.toLocaleString()}`;
-        }
-
         // --- MULTI-SELECT KATEGORI PENGELUARAN LOGIC ---
         function toggleExpCategoryDropdown() {
             const menu = document.getElementById('exp-category-dropdown-menu');
@@ -1349,6 +1149,7 @@
         }
 
         // --- EXPENSES LOGIC & FIREBASE SYNC ---
+        // SYNC: Tambah Pengeluaran Baru ke Firestore
         async function addExpense(e) {
             e.preventDefault();
             const dateVal = document.getElementById('exp-date').value;
@@ -1373,7 +1174,10 @@
             };
 
             try {
+                // Simpan ke Cloud Firestore
                 await window.fs.addDoc(window.fs.collection(window.db, "expenses"), newExp);
+
+                // Reset Form
                 document.getElementById('exp-desc').value = '';
                 document.getElementById('exp-amount').value = '';
                 setNowToDatetimeLocalInput('exp-date');
@@ -1385,6 +1189,7 @@
             }
         }
 
+        // SYNC: Hapus Pengeluaran dari Firestore
         function deleteExpense(docId) {
             openConfirmDeleteModal(
                 'Hapus Catatan Pengeluaran',
@@ -1399,6 +1204,7 @@
             );
         }
 
+        // SYNC: Hapus Semua Pengeluaran dari Firestore
         function clearExpenses() {
             openConfirmDeleteModal(
                 'Hapus Semua Pengeluaran',
@@ -1477,10 +1283,11 @@
         }
 
         // --- REPORTS LOGIC & FIREBASE SYNC ---
+        // SYNC: Hapus Transaksi Penjualan dari Firestore
         function deleteSaleTransaction(docId, customSaleId) {
             openConfirmDeleteModal(
                 'Hapus Transaksi Penjualan',
-                `Apakah Anda yakin ingin menghapus transaksi ${customSaleId}? Data laporan keuangan dan sisa saldo akan diperbarui secara otomatis.`,
+                `Apakah Anda yakin ingin menghapus transaksi ${customSaleId}? Data laporan keuangan dan laba bersih akan diperbarui secara otomatis.`,
                 async function() {
                     try {
                         await window.fs.deleteDoc(window.fs.doc(window.db, "sales", docId));
@@ -1518,7 +1325,6 @@
             
             const startDate = document.getElementById('rep-start-date').value;
             const endDate = document.getElementById('rep-end-date').value;
-            
             const filteredExpenses = expensesList.filter(exp => {
                 const expDateStr = exp.date.slice(0, 10);
                 let matchStart = true;
@@ -1528,23 +1334,9 @@
                 return matchStart && matchEnd;
             });
 
-            const filteredCapitals = capitalList.filter(cap => {
-                const capDateStr = cap.date.slice(0, 10);
-                let matchStart = true;
-                let matchEnd = true;
-                if (startDate) matchStart = capDateStr >= startDate;
-                if (endDate) matchEnd = capDateStr <= endDate;
-                return matchStart && matchEnd;
-            });
-
-            const totalCapital = filteredCapitals.reduce((sum, c) => sum + c.amount, 0);
             const totalSales = filteredSales.reduce((sum, s) => sum + s.total, 0);
             const totalExpenses = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
-            const operationalProfit = totalSales - totalExpenses;
-            const remainingCash = totalCapital + totalSales - totalExpenses;
-
-            document.getElementById('report-total-capital').innerText = `Rp ${totalCapital.toLocaleString()}`;
-            document.getElementById('report-capital-count').innerText = `${filteredCapitals.length} Catatan`;
+            const netProfit = totalSales - totalExpenses;
 
             document.getElementById('report-total-sales').innerText = `Rp ${totalSales.toLocaleString()}`;
             document.getElementById('report-sales-count').innerText = `${filteredSales.length} Transaksi`;
@@ -1553,16 +1345,14 @@
             document.getElementById('report-expenses-count').innerText = `${filteredExpenses.length} Catatan`;
 
             const profitEl = document.getElementById('report-net-profit');
-            profitEl.innerText = `Rp ${remainingCash.toLocaleString()}`;
-            if(remainingCash < 0) {
+            profitEl.innerText = `Rp ${netProfit.toLocaleString()}`;
+            if(netProfit < 0) {
                 profitEl.classList.remove('text-emerald-600', 'text-red-700');
                 profitEl.classList.add('text-red-600');
             } else {
                 profitEl.classList.remove('text-red-600', 'text-red-700');
                 profitEl.classList.add('text-emerald-600');
             }
-
-            document.getElementById('report-operational-profit').innerText = `Laba Usaha: Rp ${operationalProfit.toLocaleString()}`;
 
             // Render Sales History Table
             const tbody = document.getElementById('sales-table-body');
@@ -1607,6 +1397,7 @@
             }
         }
 
+        // SYNC: Reset Seluruh Riwayat Penjualan di Firestore
         function clearSalesHistory() {
             openConfirmDeleteModal(
                 'Reset Riwayat Penjualan',
@@ -1639,56 +1430,32 @@
                 return matchStart && matchEnd;
             });
 
-            const filteredCapitals = capitalList.filter(cap => {
-                const capDateStr = cap.date.slice(0, 10);
-                let matchStart = true;
-                let matchEnd = true;
-                if (startDate) matchStart = capDateStr >= startDate;
-                if (endDate) matchEnd = capDateStr <= endDate;
-                return matchStart && matchEnd;
-            });
-
-            if (filteredSales.length === 0 && filteredExpenses.length === 0 && filteredCapitals.length === 0) {
-                alert('Tidak ada data transaksi, modal, atau pengeluaran untuk di-export pada rentang waktu ini.');
+            if (filteredSales.length === 0 && filteredExpenses.length === 0) {
+                alert('Tidak ada data transaksi atau pengeluaran untuk di-export pada rentang waktu ini.');
                 return;
             }
 
             const wb = XLSX.utils.book_new();
 
             // 1. DATA SHEET RINGKASAN
-            const totalModal = filteredCapitals.reduce((sum, c) => sum + c.amount, 0);
             const totalOmzet = filteredSales.reduce((sum, s) => sum + s.total, 0);
             const totalBiaya = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
-            const labaUsaha = totalOmzet - totalBiaya;
-            const sisaSaldoKas = totalModal + totalOmzet - totalBiaya;
+            const labaBersih = totalOmzet - totalBiaya;
 
             const summaryData = [
                 ["LAPORAN REKAPITULASI KEUANGAN WARUNG ANUGRAH"],
                 ["Periode:", (startDate ? formatDateOnlyStandard(startDate) : 'Awal') + " s/d " + (endDate ? formatDateOnlyStandard(endDate) : 'Hari Ini')],
                 [""],
                 ["Keterangan", "Nilai (Rp)"],
-                ["Total Modal Masuk", totalModal],
                 ["Total Penjualan (Omzet)", totalOmzet],
                 ["Total Pengeluaran", totalBiaya],
-                ["Laba Usaha (Omzet - Pengeluaran)", labaUsaha],
-                ["Sisa Saldo Kas (Modal + Omzet - Pengeluaran)", sisaSaldoKas]
+                ["Estimasi Laba Bersih", labaBersih]
             ];
             const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-            wsSummary['!cols'] = [{ wch: 42 }, { wch: 20 }];
-            XLSX.utils.book_append_sheet(wb, wsSummary, "Ringkasan Keuangan");
+            wsSummary['!cols'] = [{ wch: 30 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, wsSummary, "Ringkasan Laba Rugi");
 
-            // 2. DATA SHEET MODAL
-            const capData = [
-                ["ID Modal", "Waktu", "Jenis Modal", "Keterangan", "Nominal (Rp)"]
-            ];
-            filteredCapitals.forEach(c => {
-                capData.push([c.id, formatDateStandard(new Date(c.date)), c.source, c.desc, c.amount]);
-            });
-            const wsCap = XLSX.utils.aoa_to_sheet(capData);
-            wsCap['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 24 }, { wch: 35 }, { wch: 18 }];
-            XLSX.utils.book_append_sheet(wb, wsCap, "Modal Awal");
-
-            // 3. DATA SHEET PENJUALAN
+            // 2. DATA SHEET PENJUALAN
             const salesData = [
                 ["No. Nota", "Waktu Transaksi", "Pelanggan / Meja", "Tipe Pesanan", "Metode Pembayaran", "Detail Menu Pesanan", "Total Tagihan (Rp)"]
             ];
@@ -1703,7 +1470,7 @@
             wsSales['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 20 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 18 }];
             XLSX.utils.book_append_sheet(wb, wsSales, "Penjualan");
 
-            // 4. DATA SHEET PENGELUARAN
+            // 3. DATA SHEET PENGELUARAN
             const expData = [
                 ["ID Pengeluaran", "Waktu", "Kategori", "Keterangan", "Jumlah Biaya (Rp)"]
             ];
