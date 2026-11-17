@@ -296,7 +296,10 @@
                         <form id="expense-form" onsubmit="addExpense(event)" class="space-y-3 text-xs">
                             <div>
                                 <label class="block text-slate-600 font-medium mb-1">Tanggal & Waktu</label>
-                                <input type="datetime-local" id="exp-date" required class="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
+                                <div class="flex items-center gap-1.5">
+                                    <input type="datetime-local" id="exp-date" required class="flex-1 p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none">
+                                    <button type="button" onclick="setNowToDatetimeLocalInput('exp-date')" class="px-2.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-red-700 font-semibold rounded-lg text-[11px] whitespace-nowrap">Sekarang</button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-slate-600 font-medium mb-1">Kategori</label>
@@ -657,6 +660,40 @@
         let selectedCategory = 'All';
         let currentPaymentMethod = 'Tunai';
 
+        // --- HELPER PENGURUTAN TRANSAKSI TERBARU DI ATAS (BERDASARKAN TANGGAL & JAM) ---
+        function getTimestampMs(val) {
+            if (!val) return 0;
+            if (typeof val === 'number') return val;
+            if (typeof val === 'object' && typeof val.toMillis === 'function') return val.toMillis();
+            const parsed = new Date(val).getTime();
+            return isNaN(parsed) ? 0 : parsed;
+        }
+
+        function sortByNewest(a, b) {
+            const timeA = getTimestampMs(a.date);
+            const timeB = getTimestampMs(b.date);
+            if (timeB !== timeA) {
+                return timeB - timeA;
+            }
+            // Jika tanggal & jam sama persis, urutkan berdasarkan waktu simpan (createdAt) atau ID terbaru di atas
+            const createdA = getTimestampMs(a.createdAt);
+            const createdB = getTimestampMs(b.createdAt);
+            if (createdB !== createdA) {
+                return createdB - createdA;
+            }
+            return String(b.id || '').localeCompare(String(a.id || ''));
+        }
+
+        // Ambil tanggal lokal YYYY-MM-DD dari ISO string agar filter tanggal sesuai zona waktu setempat
+        function getLocalDateKey(isoStr) {
+            const d = new Date(isoStr);
+            if (isNaN(d)) return String(isoStr || '').slice(0, 10);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         // --- HELPER UNTUK HITUNG JUMLAH PORSI MAKANAN UTAMA ---
         function getSalePortionStats(sale, menuFilter = 'All') {
             let total = 0;
@@ -704,22 +741,41 @@
 
         function formatDateOnlyStandard(dateStr) {
             if (!dateStr) return "--";
-            const dateObj = new Date(dateStr);
-            if (!isNaN(dateObj)) {
-                return formatDateStandard(dateObj);
-            }
             const parts = dateStr.split('-');
             if (parts.length === 3) {
                 return `${parts[2]}/${parts[1]}/${parts[0]}`;
             }
+            const dateObj = new Date(dateStr);
+            if (!isNaN(dateObj)) {
+                return formatDateStandard(dateObj);
+            }
             return dateStr;
         }
 
+        function getLocalDatetimeInputValue(dateObj = new Date()) {
+            const d = new Date(dateObj.getTime());
+            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+            return d.toISOString().slice(0, 16);
+        }
+
         function setNowToDatetimeLocalInput(inputId) {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
             const el = document.getElementById(inputId);
-            if (el) el.value = now.toISOString().slice(0, 16);
+            if (el) el.value = getLocalDatetimeInputValue(new Date());
+        }
+
+        // Menggabungkan input datetime-local dengan detik sekarang jika menitnya sama dengan waktu saat ini
+        function buildAccurateIsoDateFromInput(datetimeLocalVal) {
+            const now = new Date();
+            if (!datetimeLocalVal) return now.toISOString();
+
+            const parsed = new Date(datetimeLocalVal);
+            if (isNaN(parsed)) return now.toISOString();
+
+            const currentMinuteStr = getLocalDatetimeInputValue(now);
+            if (datetimeLocalVal === currentMinuteStr) {
+                parsed.setSeconds(now.getSeconds(), now.getMilliseconds());
+            }
+            return parsed.toISOString();
         }
 
         // --- INITIALIZATION & REALTIME FIREBASE LISTENERS ---
@@ -742,16 +798,16 @@
             // FireBase Realtime Subscription - Penjualan (sales)
             window.fs.onSnapshot(window.fs.collection(window.db, "sales"), (snapshot) => {
                 salesHistory = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-                // Urutkan berdasarkan waktu transaksi terbaru
-                salesHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+                // Urutkan berdasarkan waktu transaksi terbaru di atas sesuai tanggal & jam
+                salesHistory.sort(sortByNewest);
                 renderReports();
             });
 
             // FireBase Realtime Subscription - Pengeluaran (expenses)
             window.fs.onSnapshot(window.fs.collection(window.db, "expenses"), (snapshot) => {
                 expensesList = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-                // Urutkan berdasarkan tanggal & jam terbaru
-                expensesList.sort((a, b) => new Date(b.date) - new Date(a.date));
+                // Urutkan berdasarkan waktu pengeluaran terbaru di atas sesuai tanggal & jam
+                expensesList.sort(sortByNewest);
                 renderExpenses();
             });
         };
@@ -1089,7 +1145,7 @@
             }
 
             const posDateVal = document.getElementById('pos-date').value;
-            const saleDateIso = posDateVal ? new Date(posDateVal).toISOString() : new Date().toISOString();
+            const saleDateIso = buildAccurateIsoDateFromInput(posDateVal);
 
             const customerName = document.getElementById('customer-name').value.trim() || 'Pelanggan Umum';
             const orderType = document.getElementById('order-type').value;
@@ -1098,9 +1154,11 @@
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Menyimpan...`;
 
+            const nowMs = Date.now();
             const newSale = {
-                id: 'TRX-' + Date.now().toString().slice(-6),
+                id: 'TRX-' + nowMs.toString().slice(-6),
                 date: saleDateIso,
+                createdAt: nowMs,
                 customer: customerName,
                 type: orderType,
                 items: [...cart],
@@ -1228,11 +1286,13 @@
             btnSave.disabled = true;
             btnSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Menyimpan...`;
 
-            const isoDate = new Date(dateVal).toISOString();
+            const isoDate = buildAccurateIsoDateFromInput(dateVal);
+            const nowMs = Date.now();
 
             const newExp = {
-                id: 'EXP-' + Date.now().toString().slice(-6),
+                id: 'EXP-' + nowMs.toString().slice(-6),
                 date: isoDate,
+                createdAt: nowMs,
                 category: category,
                 desc: desc,
                 amount: amount
@@ -1292,17 +1352,19 @@
             const endDate = document.getElementById('exp-end-date').value;
             const selectedCats = getSelectedExpenseCategories();
 
-            return expensesList.filter(exp => {
-                const expDateStr = exp.date.slice(0, 10);
-                let matchStart = true;
-                let matchEnd = true;
-                let matchCategory = selectedCats.length === 0 || selectedCats.includes(exp.category);
+            return expensesList
+                .filter(exp => {
+                    const expDateStr = getLocalDateKey(exp.date);
+                    let matchStart = true;
+                    let matchEnd = true;
+                    let matchCategory = selectedCats.length === 0 || selectedCats.includes(exp.category);
 
-                if (startDate) matchStart = expDateStr >= startDate;
-                if (endDate) matchEnd = expDateStr <= endDate;
+                    if (startDate) matchStart = expDateStr >= startDate;
+                    if (endDate) matchEnd = expDateStr <= endDate;
 
-                return matchStart && matchEnd && matchCategory;
-            });
+                    return matchStart && matchEnd && matchCategory;
+                })
+                .sort(sortByNewest);
         }
 
         function resetExpDateFilter() {
@@ -1368,22 +1430,24 @@
             const endDate = document.getElementById('rep-end-date').value;
             const menuFilter = document.getElementById('rep-menu-filter').value;
 
-            return salesHistory.filter(sale => {
-                const saleDateStr = sale.date.slice(0, 10);
-                let matchStart = true;
-                let matchEnd = true;
-                let matchMenu = true;
+            return salesHistory
+                .filter(sale => {
+                    const saleDateStr = getLocalDateKey(sale.date);
+                    let matchStart = true;
+                    let matchEnd = true;
+                    let matchMenu = true;
 
-                if (startDate) matchStart = saleDateStr >= startDate;
-                if (endDate) matchEnd = saleDateStr <= endDate;
+                    if (startDate) matchStart = saleDateStr >= startDate;
+                    if (endDate) matchEnd = saleDateStr <= endDate;
 
-                if (menuFilter !== 'All') {
-                    const stats = getSalePortionStats(sale, menuFilter);
-                    matchMenu = stats.total > 0;
-                }
+                    if (menuFilter !== 'All') {
+                        const stats = getSalePortionStats(sale, menuFilter);
+                        matchMenu = stats.total > 0;
+                    }
 
-                return matchStart && matchEnd && matchMenu;
-            });
+                    return matchStart && matchEnd && matchMenu;
+                })
+                .sort(sortByNewest);
         }
 
         function resetReportDateFilter() {
@@ -1399,14 +1463,16 @@
             
             const startDate = document.getElementById('rep-start-date').value;
             const endDate = document.getElementById('rep-end-date').value;
-            const filteredExpenses = expensesList.filter(exp => {
-                const expDateStr = exp.date.slice(0, 10);
-                let matchStart = true;
-                let matchEnd = true;
-                if (startDate) matchStart = expDateStr >= startDate;
-                if (endDate) matchEnd = expDateStr <= endDate;
-                return matchStart && matchEnd;
-            });
+            const filteredExpenses = expensesList
+                .filter(exp => {
+                    const expDateStr = getLocalDateKey(exp.date);
+                    let matchStart = true;
+                    let matchEnd = true;
+                    if (startDate) matchStart = expDateStr >= startDate;
+                    if (endDate) matchEnd = expDateStr <= endDate;
+                    return matchStart && matchEnd;
+                })
+                .sort(sortByNewest);
 
             const totalSales = filteredSales.reduce((sum, s) => sum + s.total, 0);
             const totalExpenses = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
@@ -1519,14 +1585,16 @@
             const startDate = document.getElementById('rep-start-date').value;
             const endDate = document.getElementById('rep-end-date').value;
             
-            const filteredExpenses = expensesList.filter(exp => {
-                const expDateStr = exp.date.slice(0, 10);
-                let matchStart = true;
-                let matchEnd = true;
-                if (startDate) matchStart = expDateStr >= startDate;
-                if (endDate) matchEnd = expDateStr <= endDate;
-                return matchStart && matchEnd;
-            });
+            const filteredExpenses = expensesList
+                .filter(exp => {
+                    const expDateStr = getLocalDateKey(exp.date);
+                    let matchStart = true;
+                    let matchEnd = true;
+                    if (startDate) matchStart = expDateStr >= startDate;
+                    if (endDate) matchEnd = expDateStr <= endDate;
+                    return matchStart && matchEnd;
+                })
+                .sort(sortByNewest);
 
             if (filteredSales.length === 0 && filteredExpenses.length === 0) {
                 alert('Tidak ada data transaksi atau pengeluaran untuk di-export pada filter ini.');
@@ -1567,7 +1635,7 @@
             wsSummary['!cols'] = [{ wch: 35 }, { wch: 25 }];
             XLSX.utils.book_append_sheet(wb, wsSummary, "Ringkasan Laba Rugi");
 
-            // 2. DATA SHEET PENJUALAN
+            // 2. DATA SHEET PENJUALAN (Terurut terbaru di atas)
             const salesData = [
                 ["No. Nota", "Waktu Transaksi", "Pelanggan / Meja", "Tipe Pesanan", "Metode Pembayaran", "Detail Menu Pesanan", "Jumlah Porsi", "Total Tagihan (Rp)"]
             ];
@@ -1583,7 +1651,7 @@
             wsSales['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 20 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 16 }, { wch: 18 }];
             XLSX.utils.book_append_sheet(wb, wsSales, "Penjualan");
 
-            // 3. DATA SHEET PENGELUARAN
+            // 3. DATA SHEET PENGELUARAN (Terurut terbaru di atas)
             const expData = [
                 ["ID Pengeluaran", "Waktu", "Kategori", "Keterangan", "Jumlah Biaya (Rp)"]
             ];
@@ -1595,7 +1663,7 @@
             XLSX.utils.book_append_sheet(wb, wsExp, "Pengeluaran");
 
             // Generate & Download File .xlsx
-            const fileNameDate = new Date().toISOString().slice(0, 10);
+            const fileNameDate = getLocalDateKey(new Date().toISOString());
             XLSX.writeFile(wb, `Laporan_Warung_Anugrah_${fileNameDate}.xlsx`);
         }
     </script>
